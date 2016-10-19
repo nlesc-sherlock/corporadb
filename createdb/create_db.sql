@@ -8,7 +8,7 @@ CREATE TABLE lda (
 CREATE TABLE lda_settings (
   id INT UNSIGNED AUTO_INCREMENT NOT NULL,
   lda_id INT UNSIGNED NOT NULL,
-  number_of_words INT UNSIGNED,
+  number_of_topics INT UNSIGNED NOT NULL,
   PRIMARY KEY (id)
 );
 
@@ -51,7 +51,8 @@ CREATE TABLE distance (
 
 CREATE TABLE topic (
   id INT UNSIGNED AUTO_INCREMENT NOT NULL,
-  lda_id INT UNSIGNED,
+  lda_id INT UNSIGNED NOT NULL,
+  name TINYTEXT,
   PRIMARY KEY (id)
 );
 
@@ -65,8 +66,8 @@ CREATE TABLE topic_words (
 
 CREATE TABLE dict (
   id INT UNSIGNED AUTO_INCREMENT NOT NULL,
-  word_id INT UNSIGNED,
+  word_id INT UNSIGNED NOT NULL,
   word TINYTEXT,
-  lda_id INT UNSIGNED,
+  lda_id INT UNSIGNED NOT NULL,
   PRIMARY KEY (id)
 );
