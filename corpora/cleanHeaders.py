@@ -16,8 +16,7 @@
 
 from glob2 import glob
 from email.parser import Parser
-# import json
-import yaml
+import json
 import os
 import argparse
 
@@ -57,7 +56,7 @@ def saveEmailBody(filename, body):
 
 def saveMetadata(filename, metadata):
     with open(filename, 'w') as fout:
-        yaml.dump(metadata, fout, indent=2)
+        json.dump(metadata, fout, indent=2)
 
 
 if __name__ == '__main__':
