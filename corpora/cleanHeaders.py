@@ -16,12 +16,12 @@
 
 from glob2 import glob
 from email.parser import Parser
-# import json
 import yaml
 import os
 import argparse
+import re
 
-
+# Extracts the email text and headers from the input file
 def extractEmailBody(filename):
     with open(filename, 'r') as fin:
         mail = fin.readlines()
@@ -39,47 +39,48 @@ def extractEmailBody(filename):
         }
         return msg.get_payload(), metadata
 
-
-def removeQuotedText(body):
-    # Remove everything after 'Original Message'
+# Removes everything after 'Original Message'
+def removeOriginalQuote(body):
     cutIdx = body.find('-----Original Message')
     if cutIdx != -1:
         body = body[:cutIdx]
     return body
 
-
+# Writes the email text to the argument filename
 def saveEmailBody(filename, body):
-    dirname = os.path.dirname(filename)
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
     with open(filename, 'w') as fout:
         fout.write(body)
 
+# Writes the metadata to the argument filename
 def saveMetadata(filename, metadata):
     with open(filename, 'w') as fout:
         yaml.dump(metadata, fout, indent=2)
 
+# Does the full preprocessing of the dataset
+def preProcess(inputfolder,outputfolder):
+    docs = glob(inputfolder + '/**/*.')
+    metaData = []
+    for doc in docs:
+        try:
+            body, emailMeta = extractEmailBody(doc)
+            body = removeOriginalQuote(body)
+            baseName=os.path.basename(doc)
+            if not os.path.exists(outputfolder):
+                os.makedirs(outputfolder)
+            saveEmailBody(os.path.join(outputfolder,baseName), body)
+            emailMeta['id'] = baseName
+            metaData.append(emailMeta)
+        except Exception as e:
+            print("Error with doc: {0}".format(doc))
+    if(metaData):
+        saveMetadata(outputfolder + '/metadata.json', metaData)
 
+# Main script
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Remove headers from emails")
     parser.add_argument('input_folder')
     parser.add_argument('output_folder')
     args = parser.parse_args()
-
     basedir = args.input_folder  # 'enron_mail'
     savedir = args.output_folder  # 'enron_mail_clean'
-    savedir = args.output_folder  # 'enron_mail_clean'
-    docs = glob(basedir + '/**/*.')
-
-    metaData = []
-    for doc in docs:
-        try:
-            body, emailMeta = extractEmailBody(doc)
-            body = removeQuotedText(body)
-            baseName = doc.replace(basedir, '')
-            saveEmailBody(savedir + '/' + baseName, body)
-            emailMeta['id'] = baseName
-            metaData.append(emailMeta)
-        except Exception as e:
-            print("Error with doc: {0}".format(doc))
-    saveMetadata(savedir + '/metadata.json', metaData)
+    preProcess(input_folder,output_folder)
