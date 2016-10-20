@@ -16,7 +16,7 @@
 
 from glob2 import glob
 from email.parser import Parser
-import yaml
+import json
 import os
 import argparse
 import re
@@ -54,7 +54,7 @@ def saveEmailBody(filename, body):
 # Writes the metadata to the argument filename
 def saveMetadata(filename, metadata):
     with open(filename, 'w') as fout:
-        yaml.dump(metadata, fout, indent=2)
+        json.dump(metadata, fout, indent=2)
 
 # Does the full preprocessing of the dataset
 def preProcess(inputfolder,outputfolder):
