@@ -42,3 +42,14 @@ class cleanHeaders_tests(unittest.TestCase):
         cleantext=cleanHeaders.removeOriginalQuote(body)
         print cleantext
         nose.tools.ok_(cleantext.endswith("Jim Wills"))
+
+    def test_preProcess(self):
+        curdir=os.path.abspath(os.path.dirname(__file__))
+        inputpath=os.path.join(curdir,"testdata")
+        outputpath=os.path.join(curdir,"output")
+        cleanHeaders.preProcess(inputpath,outputpath)
+        nose.tools.ok_(os.path.exists(os.path.join(outputpath,"metadata.json")))
+        nose.tools.ok_(os.path.exists(os.path.join(outputpath,"73.")))
+        for f in os.listdir(outputpath):
+            os.remove(os.path.join(outputpath,f))
+        os.rmdir(outputpath)
