@@ -4,26 +4,17 @@ import random
 import string
 import datetime
 import collections
+import yaml
+import numpy
+from sklearn.metrics import pairwise_distances
 
-domains = [ "hotmail.com", "gmail.com", "aol.com", "mail.com" , "mail.kz", "yahoo.com"]
+
 letters = string.ascii_lowercase[:12]
-
-def get_random_domain(domains):
-  return random.choice(domains)
 
 def get_random_name(letters, length):
   return ''.join(random.choice(letters) for i in range(length))
 
-def generate_random_emails(nb, length):
-  return [get_random_name(letters, length) + '@' + get_random_domain(domains) for i in range(nb)]
 
-def get_random_sentence():
-  nouns = ("puppy", "car", "rabbit", "girl", "monkey")
-  verbs = ("runs", "hits", "jumps", "drives", "barfs") 
-  adv = ("crazily.", "dutifully.", "foolishly.", "merrily.", "occasionally.")
-  adj = ("adorable", "clueless", "dirty", "odd", "stupid")
-  l=[nouns,verbs,adj,adv]
-  return ' '.join([random.choice(i) for i in l])
 
 def create_dict(lst,keys):
   ddict = collections.defaultdict(dict)
@@ -35,38 +26,70 @@ def create_dict(lst,keys):
 class fill_db:
 
   def __init__(self):
-    self.create_dummy_metadata_dict(7)
+    self.create_dummy_data()
+
+
+  def create_dummy_data(self):
+    self.read_metadata_json('../data/metadata.json')
+    self.create_random_words(10000)
+    self.numtopics = 10
+    # normalized probability matrix, words in a topic
+    self.wordprob = self.create_probabilities(self.numtopics, self.lenwords)
+    # normalized probability matrix, emails in a topic
+    self.num_emails = len(self.metadata)
+    self.email_prob = self.create_probabilities(self.numtopics, self.num_emails)
+    # distance matrix between topics
+    self.find_distance_matrix(self.wordprob)
     import pdb; pdb.set_trace()
 
-  def read_avro_files(self):
-    pass
-
-  def create_numpy_array(self):
-    pass
-
-  def create_dummy_metadata_dict(self, num_emails):
-    sender = generate_random_emails(num_emails, random.randint(6,12))
-    receiver = generate_random_emails(num_emails, random.randint(6,12))
-    cc = generate_random_emails(num_emails, random.randint(6,12))
-    bcc = generate_random_emails(num_emails, random.randint(6,12))
-    subject = [get_random_sentence() for i in range(num_emails)]
-    # generate random email datetime
-    start_date = datetime.date.today().replace(day=1, month=1).toordinal()
-    end_date = datetime.date.today().toordinal()
-    email_time = [datetime.datetime.fromordinal(random.randint(start_date, end_date)) for i in range(num_emails)]
-    self.metadict = create_dict([sender, receiver, cc, bcc, subject, 
-                                 email_time], ['sender', 'receiver', 'cc',
-                                               'bcc', 'subject', 'email_time'])
+  def read_metadata_json(self, filename):
+    '''
+    read metadata from json filename
+    '''
+    with open(filename, 'r') as f:
+      self.metadata = yaml.load(f)
 
 
-  def write_to_database(self):
-    pass
+  def create_random_words(self, num_words):
+    '''
+    create a random list of words
+    '''
+    # create n random words
+    randwords = set([get_random_name
+                         (letters, random.randint(2,12))
+                         for i in range(0,num_words)])
+    randwords = [x for x in randwords]
+    # create dictionary
+    self.worddict = collections.defaultdict(dict)
+    for i in range(0, len(randwords)):
+      self.worddict[randwords[i]] = i
+    self.lenwords = len(randwords)
 
-  def save_database(self):
-    pass
 
-  def open_database(self):
-    pass
-  
+  def create_probabilities(self, collection, item):
+    '''
+    create probabilities of each word in each topic
+    '''
+    a = numpy.random.randn(collection, item)
+    row_sums = a.sum(axis=1)
+    probabilities = a / row_sums[:, numpy.newaxis]
+    return probabilities
+
+
+  def find_distance_matrix(self, vector, metric='cosine'):
+    '''
+    compute distance matrix between topis using cosine or euclidean
+    distance (default=cosine distance)
+    '''
+    if metric == 'cosine':
+      self.distance_matrix = pairwise_distances(vector,
+                                                metric='cosine')
+      # diagonals should be exactly zero, so remove rounding errors
+      numpy.fill_diagonal(self.distance_matrix, 0)
+    if metric == 'euclidean':
+      self.distance_matrix = pairwise_distances(vector,
+                                                metric='euclidean')
+
+
 if __name__=="__main__":
   fill_db()
