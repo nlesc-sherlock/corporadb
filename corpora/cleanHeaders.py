@@ -41,10 +41,10 @@ def extractEmailBody(filename):
 
 # Removes everything after 'Original Message'
 def removeOriginalQuote(body):
-    cutIdx = body.find('-----Original Message')
-    if cutIdx != -1:
-        body = body[:cutIdx]
-    return body
+    match = re.search('-* *(Original Message:)',body,re.I)
+    if match:
+        body = body[:match.start()]
+        return body
 
 # Writes the email text to the argument filename
 def saveEmailBody(filename, body):
@@ -52,7 +52,7 @@ def saveEmailBody(filename, body):
         fout.write(body)
 
 # Writes the metadata to the argument filename
-def saveMetadata(filename, metadata):
+def saveMetaData(filename, metadata):
     with open(filename, 'w') as fout:
         json.dump(metadata, fout, indent=2)
 
@@ -73,7 +73,7 @@ def preProcess(inputfolder,outputfolder):
         except Exception as e:
             print("Error with doc: {0}".format(doc))
     if(metaData):
-        saveMetadata(outputfolder + '/metadata.json', metaData)
+        saveMetaData(outputfolder + '/metadata.json', metaData)
 
 # Main script
 if __name__ == '__main__':
