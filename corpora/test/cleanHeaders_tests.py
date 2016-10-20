@@ -28,6 +28,11 @@ class cleanHeaders_tests(unittest.TestCase):
         cleantext=cleanHeaders.removeOriginalQuote(text)
         nose.tools.eq_(cleantext,"Please stop bothering me.\nGoodbye.")
 
+    def test_removeQuotedText4(self):
+        text="Please stop bothering me.\nGoodbye.\n--- Forwarded by Pietje:\n>Leave me alone."
+        cleantext=cleanHeaders.removeOriginalQuote(text)
+        nose.tools.eq_(cleantext,"Please stop bothering me.\nGoodbye.")
+
     def test_ExtractEmailBody(self):
         curdir=os.path.abspath(os.path.dirname(__file__))
         filepath=os.path.join(curdir,"testdata","73.")
@@ -35,7 +40,7 @@ class cleanHeaders_tests(unittest.TestCase):
         nose.tools.ok_(body.startswith("Phillip,"))
         nose.tools.eq_(mdat["From"],"jwills3@swbell.net")
 
-    def test_removeQuotedText5(self):
+    def test_removeQuotedText6(self):
         curdir=os.path.abspath(os.path.dirname(__file__))
         filepath=os.path.join(curdir,"testdata","73.")
         body,mdat=cleanHeaders.extractEmailBody(filepath)

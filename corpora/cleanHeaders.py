@@ -48,6 +48,9 @@ def removeOriginalQuote(body):
     match = re.search('-* *(Original Message:) *-*',body,re.I)
     if match:
         body = body[:match.start()]
+    match = re.search('-* *(Forwarded by)',body,re.I)
+    if match:
+        body = body[:match.start()]
     return body.strip()
 
 # Writes the email text to the argument filename
@@ -59,6 +62,9 @@ def saveEmailBody(filename, body):
 def saveMetaData(filename, metadata):
     with open(filename, 'w') as fout:
         json.dump(metadata, fout, indent=2)
+
+def fixMalformedMime(body):
+    raise Exception("Not implemented yet")
 
 # Does the full preprocessing of the dataset
 def preProcess(inputfolder,outputfolder):
