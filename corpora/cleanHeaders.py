@@ -39,12 +39,16 @@ def extractEmailBody(filename):
         }
         return msg.get_payload(), metadata
 
-# Removes everything after 'Original Message'
+# Removes everything after 'Original Message' or '<somebody> wrote:'
+# TODO: Fix this for replies AFTER original messages
 def removeOriginalQuote(body):
-    match = re.search('-* *(Original Message:)',body,re.I)
+    match = re.search('.*( wrote:)[\n]+>',body)
     if match:
         body = body[:match.start()]
-        return body
+    match = re.search('-* *(Original Message:) *-*',body,re.I)
+    if match:
+        body = body[:match.start()]
+    return body.strip()
 
 # Writes the email text to the argument filename
 def saveEmailBody(filename, body):
