@@ -19,7 +19,6 @@ from email.parser import Parser
 import json
 import os
 import argparse
-import re
 
 # Extracts the email text and headers from the input file
 def extractEmailBody(filename):
@@ -39,19 +38,12 @@ def extractEmailBody(filename):
         }
         return msg.get_payload(), metadata
 
-# Removes everything after 'Original Message' or '<somebody> wrote:'
-# TODO: Fix this for replies AFTER original messages
+# Removes everything after 'Original Message'
 def removeOriginalQuote(body):
-    match = re.search('.*( wrote:)[\n]+>',body)
-    if match:
-        body = body[:match.start()]
-    match = re.search('-* *(Original Message:) *-*',body,re.I)
-    if match:
-        body = body[:match.start()]
-    match = re.search('-* *(Forwarded by)',body,re.I)
-    if match:
-        body = body[:match.start()]
-    return body.strip()
+    cutIdx = body.find('-----Original Message')
+    if cutIdx != -1:
+        body = body[:cutIdx]
+    return body
 
 # Writes the email text to the argument filename
 def saveEmailBody(filename, body):
@@ -59,12 +51,9 @@ def saveEmailBody(filename, body):
         fout.write(body)
 
 # Writes the metadata to the argument filename
-def saveMetaData(filename, metadata):
+def saveMetadata(filename, metadata):
     with open(filename, 'w') as fout:
         json.dump(metadata, fout, indent=2, ensure_ascii=False)
-
-def fixMalformedMime(body):
-    raise Exception("Not implemented yet")
 
 # Does the full preprocessing of the dataset
 def preProcess(inputfolder,outputfolder):
@@ -75,15 +64,17 @@ def preProcess(inputfolder,outputfolder):
             body, emailMeta = extractEmailBody(doc)
             body = removeOriginalQuote(body)
             baseName=os.path.basename(doc)
-            if not os.path.exists(outputfolder):
-                os.makedirs(outputfolder)
-            saveEmailBody(os.path.join(outputfolder,baseName), body)
+
+            outputdir = os.path.dirname(doc.replace(inputfolder, outputfolder))
+            if not os.path.exists(outputdir):
+                os.makedirs(outputdir)
+            saveEmailBody(os.path.join(outputdir,baseName), body)
             emailMeta['id'] = baseName
             metaData.append(emailMeta)
         except:
             print("Error with doc: {0}".format(doc))
     if(metaData):
-        saveMetaData(outputfolder + '/metadata.json', metaData)
+        saveMetadata(outputfolder + '/metadata.json', metaData)
 
 # Main script
 if __name__ == '__main__':
@@ -91,6 +82,6 @@ if __name__ == '__main__':
     parser.add_argument('input_folder')
     parser.add_argument('output_folder')
     args = parser.parse_args()
-    input_folder = args.input_folder  # 'enron_mail'
-    output_folder = args.output_folder  # 'enron_mail_clean'
-    preProcess(input_folder,output_folder)
+    basedir = args.input_folder  # 'enron_mail'
+    savedir = args.output_folder  # 'enron_mail_clean'
+    preProcess(basedir,savedir)
