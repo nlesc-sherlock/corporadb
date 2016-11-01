@@ -2,11 +2,6 @@ import gensim
 import argparse
 from corpora.utils import loadDocuments
 
-def saveTokens(filename, tokens):
-    with open(filename, 'w') as fout:
-        for token in tokens:
-            fout.write(token + '\n')
-
 def generateDictionary(inputfolder, outputDict):
     docs = loadDocuments(inputfolder)
     newDic = gensim.corpora.Dictionary.from_documents(docs)
