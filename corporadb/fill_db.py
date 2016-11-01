@@ -31,7 +31,6 @@ class fill_db:
     self.create_dummy_data()
     self.connection, self.cursor = connectToDB(dbname)
     self.fill_database()
-    import pdb; pdb.set_trace()
     commitToDB(self.connection. self.cursor)
     closeDBConnection(self.connection, self.cursor)
     del self.connection, self.cursor
@@ -120,20 +119,22 @@ class fill_db:
     for topic, idx1 in enumerate(topic_ids):
       for topic2, idx2 in enumerate(topic_ids):
         rows = nparray(['topic_id1', 'topic_id2', 'distance'])
-        values = nparray([topic, topic2, self.distance_matrix[topic, topic2]])
+        values = nparray([topic, topic2, self.distance_matrix[topic-1, topic2-1]])
         self.add_distance_to_topic('distance', rows, values)
     # loop over emails
-    for email in range(0, 10):  #self.num_emails):  # loop over emails
+    for email in range(0, self.num_emails):  # loop over emails
       em = self.metadata[email]
       values = nparray([em['Subject'], em['From'], em['To'], em['Cc'],
                         em['Bcc'], em['Date']])
+      values = nparray([value.replace("'", " ") if
+                         value else value for value in values])
       rows = nparray(['subject', 'sender', 'receiver', 'cc', 'bcc',
                       'send_time'])
       bool = nparray([True if a else False for a in values])
       self.add_email('email', rows[bool], values[bool])
       for t_id, idx2 in enumerate(topic_ids):  # loop over topics
         rows = nparray(['topic_id', 'topic_probability'])
-        values = nparray([t_id+1, self.email_prob[email, idx2-1]])
+        values = nparray([t_id+1, self.email_prob[idx2-1, email]])
         self.add_blob('email_blob', rows, values)
     # add words to dict
     for word in self.randwords:
