@@ -13,7 +13,7 @@ def connectToDB(dbName = None):
     Connect to a specified MySQL DB and return connection and cursor objects.
     '''
     # Start DB connection
-    try: 
+    try:
         connection = sqlite3.connect(dbName)
     except Exception as E:
         err_msg = 'Unable to connect to %s DB.'% dbName
@@ -21,7 +21,7 @@ def connectToDB(dbName = None):
         raise
     msg = 'Successful connected to %s DB.'%dbName
     #logging.debug(msg)
-    # if the connection succeeded get a cursor    
+    # if the connection succeeded get a cursor
     cursor = connection.cursor()
     return connection, cursor
 
@@ -31,11 +31,19 @@ def closeDBConnection(connection, cursor):
     Closes a connection to a DB given the connection and cursor objects
     '''
     cursor.close()
-    connection.close()    
+    connection.close()
     msg = 'Connection to the DB is closed.'
     #logging.debug(msg)
     return
 
+def commitToDB(connection, cursor):
+    '''
+    Commit changes to database, rollback in case of errors
+    '''
+    try:
+        connection.commit()
+    except:
+        connection.rollback()
 
 def extract_from_db_sql(cursor, event_id, table, column):
     '''
@@ -44,4 +52,4 @@ def extract_from_db_sql(cursor, event_id, table, column):
     sql = "select {} from {} where id={}".format().format(table,
                                                           column, event_id)
     cursor.execute(sql)
-return cursor.fetchone()
+    return cursor.fetchone()
