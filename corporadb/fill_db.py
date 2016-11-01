@@ -114,44 +114,11 @@ class fill_db:
     self.add_lda('lda', (), ())
     if self.insert:
       # add topics
-      for idx in range(0,self.numtopics):
-        try:
-          topic_ids = npappend(topic_ids, self.add_topic('topic', nparray(['name']), nparray([get_random_name(letters, 5)])))
-        except NameError:
-          topic_ids = self.add_topic('topic', nparray(['name']), nparray([get_random_name(letters, 5)]))
-      for idx1, topic in enumerate(topic_ids):
-        for idx2, topic2 in enumerate(topic_ids):
-          rows = nparray(['topic_id1', 'topic_id2', 'distance'])
-          values = nparray([topic, topic2, self.distance_matrix[idx1, idx2]])
-          self.add_distance_to_topic('distance', rows, values)
-      # loop over emails
-      for email in range(0, self.num_emails):  # loop over emails
-        em = self.metadata[email]
-        values = nparray([em['Subject'], em['From'], em['To'], em['Cc'],
-                          em['Bcc'], em['Date']])
-        values = nparray([value.replace("'", " ") if
-                          value else value for value in values])
-        rows = nparray(['subject', 'sender', 'receiver', 'cc', 'bcc',
-                        'send_time'])
-        bool = nparray([True if a else False for a in values])
-        self.add_email('email', rows[bool], values[bool])
-        for idx2, t_id in enumerate(topic_ids):  # loop over topics
-          rows = nparray(['topic_id', 'topic_probability'])
-          values = nparray([t_id, self.email_prob[idx2, email]])
-          self.add_blob('email_blob', rows, values)
-      # add words to dict
-      for word in self.randwords:
-        rows = nparray(['word'])
-        values = nparray([word])
-        try:
-          word_ids = npappend(word_ids, self.add_dict('dict', rows, values))
-        except NameError:
-          word_ids = self.add_dict('dict', rows, values)
-      for idx1, topicid in enumerate(topic_ids):
-        for idx2, wordid in enumerate(word_ids):
-          rows = nparray(['topic_id', 'word_id' , 'probability'])
-          values = nparray([topicid, wordid, self.wordprob[idx1, idx2]])
-          self.add_topic_words('topic_words', rows, values)
+      topic_ids = self.add_topics()
+      self.add_topic_distances(topic_ids)
+      self.add_emails(topic_ids)
+      word_ids = self.add_words()
+      self.add_topic_words(topic_ids, word_ids)
 
   def check_dataset(self):
     '''
@@ -162,11 +129,14 @@ class fill_db:
     self.cursor.execute('select rowid, name from dataset')
     citems = self.cursor.fetchall()
     names = [citem['name'] for citem in citems]  # get all names
-    try:
-      idx = numpy.where(numpy.array(names)==self.datasetname)[0][0]
-      self.dataset_id = citems[idx]['rowid']
-      return True
-    except IndexError:
+    if names:
+      try:
+        idx = numpy.where(numpy.array(names)==self.datasetname)[0][0]
+        self.dataset_id = citems[idx]['rowid']
+        return True
+      except IndexError:
+        return False
+    else:
       return False
 
   def check_lda_settings(self):
@@ -228,6 +198,17 @@ class fill_db:
       value = npappend(value, (self.lda_settings_id, self.dataset_id))
       self.lda_id = self.insert_into_database(table, rows, value)
 
+  def add_topics(self):
+    '''
+    Insert all topics into database
+    '''
+    for idx in range(0,self.numtopics):
+      try:
+        topic_ids = npappend(topic_ids, self.add_topic('topic', nparray(['name']), nparray([get_random_name(letters, 5)])))
+      except NameError:
+        topic_ids = self.add_topic('topic', nparray(['name']), nparray([get_random_name(letters, 5)]))
+    return topic_ids
+
   def add_topic(self, table, rows, value):
     '''
     Add topic to topics table
@@ -236,6 +217,16 @@ class fill_db:
     value = npappend(value, (self.lda_id))
     return self.insert_into_database(table, rows, value)
 
+  def add_topic_distances(self, topic_ids):
+    '''
+    Add distances between all topics
+    '''
+    for idx1, topic in enumerate(topic_ids):
+      for idx2, topic2 in enumerate(topic_ids):
+        rows = nparray(['topic_id1', 'topic_id2', 'distance'])
+        values = nparray([topic, topic2, self.distance_matrix[idx1, idx2]])
+        self.add_distance_to_topic('distance', rows, values)
+
   def add_distance_to_topic(self, table, rows, value):
     '''
     Add topic to topics table
@@ -243,6 +234,26 @@ class fill_db:
     rows = npappend(rows, ('lda_id'))
     value = npappend(value, (self.lda_id))
     distance_id = self.insert_into_database(table, rows, value)
+
+  def add_emails(self, topic_ids):
+    '''
+    add all emails and email_blobs
+    '''
+    # loop over emails
+    for email in range(0, self.num_emails):  # loop over emails
+      em = self.metadata[email]
+      values = nparray([em['Subject'], em['From'], em['To'], em['Cc'],
+                        em['Bcc'], em['Date']])
+      values = nparray([value.replace("'", " ") if
+                        value else value for value in values])
+      rows = nparray(['subject', 'sender', 'receiver', 'cc', 'bcc',
+                      'send_time'])
+      bool = nparray([True if a else False for a in values])
+      self.add_email('email', rows[bool], values[bool])
+      for idx2, t_id in enumerate(topic_ids):  # loop over topics
+        rows = nparray(['topic_id', 'topic_probability'])
+        values = nparray([t_id, self.email_prob[idx2, email]])
+        self.add_blob('email_blob', rows, values)
 
   def add_email(self, table, rows, value):
     '''
@@ -260,11 +271,35 @@ class fill_db:
     value = npappend(value, (self.email_id, self.lda_id))
     blob_id = self.insert_into_database(table, rows, value)
 
-  def add_topic_words(self, table, rows, value):
+
+  def add_topic_words(self, topic_ids, word_ids):
+    '''
+    Fill topicwords table
+    '''
+    for idx1, topicid in enumerate(topic_ids):
+      for idx2, wordid in enumerate(word_ids):
+        rows = nparray(['topic_id', 'word_id' , 'probability'])
+        values = nparray([topicid, wordid, self.wordprob[idx1, idx2]])
+        self.add_topic_word('topic_words', rows, values)
+
+  def add_topic_word(self, table, rows, value):
     '''
     Add topicwords to topicwords table
     '''
     topic_words_id = self.insert_into_database(table, rows, value)
+
+  def add_words(self):
+    '''
+    Add all words to the dictionary table
+    '''
+    for word in self.randwords:
+      rows = nparray(['word'])
+      values = nparray([word])
+      try:
+        word_ids = npappend(word_ids, self.add_dict('dict', rows, values))
+      except NameError:
+        word_ids = self.add_dict('dict', rows, values)
+    return word_ids
 
   def add_dict(self, table, rows, value):
     '''
