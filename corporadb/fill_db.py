@@ -10,6 +10,7 @@ from sklearn.metrics import pairwise_distances
 from dbase import *
 from numpy import array as nparray
 from numpy import append as npappend
+from numpy import ravel as npravel
 
 letters = string.ascii_lowercase[:12]
 
@@ -36,6 +37,7 @@ class fill_db:
     del self.connection, self.cursor
 
   def create_dummy_data(self):
+    self.datasetname = 'sherlock'
     self.read_metadata_json('../data/metadata.json')
     self.create_random_words(10000)
     self.numtopics = 10
@@ -104,71 +106,127 @@ class fill_db:
     return self.cursor.lastrowid
 
   def fill_database(self):
-    # Add new dataset, called 'sherlock' for now
-    self.add_dataset('dataset', nparray(['name']), nparray(['sherlock']))
+    # Add new dataset
+    self.add_dataset('dataset', nparray(['name']), nparray([self.datasetname]))
     # add lda_settings (only contains number_of_topics for now)
     self.add_lda_settings('lda_settings', nparray(['number_of_topics']),
                           nparray([self.numtopics]))
     self.add_lda('lda', (), ())
-    # add topics
-    for idx in range(0,self.numtopics):
-      try:
-        topic_ids = npappend(topic_ids, self.add_topic('topic', nparray(['name']), nparray([get_random_name(letters, 5)])))
-      except NameError:
-        topic_ids = self.add_topic('topic', nparray(['name']), nparray([get_random_name(letters, 5)]))
-    for idx1, topic in enumerate(topic_ids):
-      for idx2, topic2 in enumerate(topic_ids):
-        rows = nparray(['topic_id1', 'topic_id2', 'distance'])
-        values = nparray([topic, topic2, self.distance_matrix[idx1, idx2]])
-        self.add_distance_to_topic('distance', rows, values)
-    # loop over emails
-    for email in range(0, self.num_emails):  # loop over emails
-      em = self.metadata[email]
-      values = nparray([em['Subject'], em['From'], em['To'], em['Cc'],
-                        em['Bcc'], em['Date']])
-      values = nparray([value.replace("'", " ") if
-                         value else value for value in values])
-      rows = nparray(['subject', 'sender', 'receiver', 'cc', 'bcc',
-                      'send_time'])
-      bool = nparray([True if a else False for a in values])
-      self.add_email('email', rows[bool], values[bool])
-      for idx2, t_id in enumerate(topic_ids):  # loop over topics
-        rows = nparray(['topic_id', 'topic_probability'])
-        values = nparray([t_id, self.email_prob[idx2, email]])
-        self.add_blob('email_blob', rows, values)
-    # add words to dict
-    for word in self.randwords:
-      rows = nparray(['word'])
-      values = nparray([word])
-      try:
-        word_ids = npappend(word_ids, self.add_dict('dict', rows, values))
-      except NameError:
-        word_ids = self.add_dict('dict', rows, values)
-    for idx1, topicid in enumerate(topic_ids):
-      for idx2, wordid in enumerate(word_ids):
-        rows = nparray(['topic_id', 'word_id' , 'probability'])
-        values = nparray([topicid, wordid, self.wordprob[idx1, idx2]])
-        self.add_topic_words('topic_words', rows, values)
+    if self.insert:
+      # add topics
+      for idx in range(0,self.numtopics):
+        try:
+          topic_ids = npappend(topic_ids, self.add_topic('topic', nparray(['name']), nparray([get_random_name(letters, 5)])))
+        except NameError:
+          topic_ids = self.add_topic('topic', nparray(['name']), nparray([get_random_name(letters, 5)]))
+      for idx1, topic in enumerate(topic_ids):
+        for idx2, topic2 in enumerate(topic_ids):
+          rows = nparray(['topic_id1', 'topic_id2', 'distance'])
+          values = nparray([topic, topic2, self.distance_matrix[idx1, idx2]])
+          self.add_distance_to_topic('distance', rows, values)
+      # loop over emails
+      for email in range(0, self.num_emails):  # loop over emails
+        em = self.metadata[email]
+        values = nparray([em['Subject'], em['From'], em['To'], em['Cc'],
+                          em['Bcc'], em['Date']])
+        values = nparray([value.replace("'", " ") if
+                          value else value for value in values])
+        rows = nparray(['subject', 'sender', 'receiver', 'cc', 'bcc',
+                        'send_time'])
+        bool = nparray([True if a else False for a in values])
+        self.add_email('email', rows[bool], values[bool])
+        for idx2, t_id in enumerate(topic_ids):  # loop over topics
+          rows = nparray(['topic_id', 'topic_probability'])
+          values = nparray([t_id, self.email_prob[idx2, email]])
+          self.add_blob('email_blob', rows, values)
+      # add words to dict
+      for word in self.randwords:
+        rows = nparray(['word'])
+        values = nparray([word])
+        try:
+          word_ids = npappend(word_ids, self.add_dict('dict', rows, values))
+        except NameError:
+          word_ids = self.add_dict('dict', rows, values)
+      for idx1, topicid in enumerate(topic_ids):
+        for idx2, wordid in enumerate(word_ids):
+          rows = nparray(['topic_id', 'word_id' , 'probability'])
+          values = nparray([topicid, wordid, self.wordprob[idx1, idx2]])
+          self.add_topic_words('topic_words', rows, values)
+
+  def check_dataset(self):
+    '''
+    check if dataset is already in database
+    if found set self.dataset_id to the entry in the database
+    return boolean
+    '''
+    self.cursor.execute('select rowid, name from dataset')
+    citems = self.cursor.fetchall()
+    names = [citem['name'] for citem in citems]  # get all names
+    try:
+      idx = numpy.where(numpy.array(names)==self.datasetname)[0][0]
+      self.dataset_id = citems[idx]['rowid']
+      return True
+    except IndexError:
+      return False
+
+  def check_lda_settings(self):
+    '''
+    check if lda_settings is already in database
+    if found set self.lda_settings_id to the entry in the database
+    return boolean
+    '''
+    self.cursor.execute('select rowid, number_of_topics from lda_settings')
+    citems = self.cursor.fetchall()
+    ntopics = [citem['number_of_topics'] for citem in citems]
+    try:
+      idx = numpy.where(numpy.array(ntopics)==self.numtopics)[0][0]
+      self.lda_settings_id = citems[idx]['rowid']
+      return True
+    except IndexError:
+      return False
+
+  def check_lda(self):
+    '''
+    check if lda is already in database
+    if found set self.insert to False, else self.insert=True
+    '''
+    self.cursor.execute('select rowid, dataset_id, lda_settings_id from lda')
+    citems = self.cursor.fetchall()
+    found_lda = [True if (citem['lda_settings_id']==self.lda_settings_id and
+                          citem['dataset_id']==self.dataset_id)
+                 else  False for citem in citems]
+    if True in found_lda:
+      return False
+    else:
+      return True
 
   def add_dataset(self, table, rows, value):
     '''
-    Add dataset to dataset table
+    check if dataset has already an entry in the database
+    if not found insert dataset into database,
+    else get dataset_id from database
     '''
-    self.dataset_id = self.insert_into_database(table, rows, value)
+    if not self.check_dataset():
+      self.dataset_id = self.insert_into_database(table, rows, value)
 
   def add_lda_settings(self, table, rows, value):
     '''
-    Add lda_settings to lda_settings table
+    Check if lda_settings is already in the database
+    if not found insert lda_settings into the database,
+    else get lda_settings_id from the database
     '''
-    self.lda_settings_id = self.insert_into_database(table, rows, value)
+    if not self.check_lda_settings():
+      self.lda_settings_id = self.insert_into_database(table, rows, value)
 
   def add_lda(self, table, rows, value):
     '''
     Add lda to lda table
     '''
-    rows = npappend(rows, ('lda_settings_id', 'dataset_id'))
-    value = npappend(value, (self.lda_settings_id, self.dataset_id))
-    self.lda_id = self.insert_into_database(table, rows, value)
+    self.insert = self.check_lda()
+    if self.insert:
+      rows = npappend(rows, ('lda_settings_id', 'dataset_id'))
+      value = npappend(value, (self.lda_settings_id, self.dataset_id))
+      self.lda_id = self.insert_into_database(table, rows, value)
 
   def add_topic(self, table, rows, value):
     '''

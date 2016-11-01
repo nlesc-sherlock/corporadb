@@ -22,6 +22,7 @@ def connectToDB(dbName = None):
     msg = 'Successful connected to %s DB.'%dbName
     #logging.debug(msg)
     # if the connection succeeded get a cursor
+    connection.row_factory = sqlite3.Row
     cursor = connection.cursor()
     return connection, cursor
 
