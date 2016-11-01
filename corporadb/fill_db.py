@@ -31,7 +31,7 @@ class fill_db:
     self.create_dummy_data()
     self.connection, self.cursor = connectToDB(dbname)
     self.fill_database()
-    commitToDB(self.connection. self.cursor)
+    commitToDB(self.connection, self.cursor)
     closeDBConnection(self.connection, self.cursor)
     del self.connection, self.cursor
 
