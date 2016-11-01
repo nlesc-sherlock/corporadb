@@ -19,8 +19,7 @@ def buildMatrix(inputDict, inputFolder, outputMatrix):
         docTokens = loadTokens(doc)
         for wordIdx,wordCount in wordDict.doc2bow(docTokens):
             sp[wordIdx,docId] = wordCount
-    print 'SIZE: ',(nWords, nDocs)
-    print 'SUM : ', sp.sum()
+    print 'Words,Documents: ',(nWords, nDocs)
     mmwrite(outputMatrix, sp)
 
 # Main script
@@ -32,5 +31,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     inputdict = args.input_dictionary  # 'enron_mail_clean.dict'
     basedir = args.input_folder  # 'enron_mail_clean_tokens'
-    savematrix = args.output_matrix  # ''
+    savematrix = args.output_matrix  # 'enron_mail_random_clean.mtx'
     buildMatrix(inputdict, basedir, savematrix)
