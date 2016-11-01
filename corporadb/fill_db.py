@@ -74,9 +74,9 @@ class fill_db:
     '''
     create probabilities of each word in each topic
     '''
-    a = numpy.random.randn(collection, item)
-    row_sums = a.sum(axis=1)
-    probabilities = a / row_sums[:, numpy.newaxis]
+    a = numpy.abs(numpy.random.randn(collection, item))
+    row_sums = a.sum(axis=0)
+    probabilities = a / row_sums[numpy.newaxis, :]
     return probabilities
 
   def find_distance_matrix(self, vector, metric='cosine'):
@@ -116,10 +116,10 @@ class fill_db:
         topic_ids = npappend(topic_ids, self.add_topic('topic', nparray(['name']), nparray([get_random_name(letters, 5)])))
       except NameError:
         topic_ids = self.add_topic('topic', nparray(['name']), nparray([get_random_name(letters, 5)]))
-    for topic, idx1 in enumerate(topic_ids):
-      for topic2, idx2 in enumerate(topic_ids):
+    for idx1, topic in enumerate(topic_ids):
+      for idx2, topic2 in enumerate(topic_ids):
         rows = nparray(['topic_id1', 'topic_id2', 'distance'])
-        values = nparray([topic, topic2, self.distance_matrix[topic-1, topic2-1]])
+        values = nparray([topic, topic2, self.distance_matrix[idx1, idx2]])
         self.add_distance_to_topic('distance', rows, values)
     # loop over emails
     for email in range(0, self.num_emails):  # loop over emails
@@ -132,9 +132,9 @@ class fill_db:
                       'send_time'])
       bool = nparray([True if a else False for a in values])
       self.add_email('email', rows[bool], values[bool])
-      for t_id, idx2 in enumerate(topic_ids):  # loop over topics
+      for idx2, t_id in enumerate(topic_ids):  # loop over topics
         rows = nparray(['topic_id', 'topic_probability'])
-        values = nparray([t_id+1, self.email_prob[idx2-1, email]])
+        values = nparray([t_id, self.email_prob[idx2, email]])
         self.add_blob('email_blob', rows, values)
     # add words to dict
     for word in self.randwords:
@@ -144,10 +144,10 @@ class fill_db:
         word_ids = npappend(word_ids, self.add_dict('dict', rows, values))
       except NameError:
         word_ids = self.add_dict('dict', rows, values)
-    for topicid, idx1 in enumerate(topic_ids):
-      for wordid,idx2 in enumerate(word_ids):
+    for idx1, topicid in enumerate(topic_ids):
+      for idx2, wordid in enumerate(word_ids):
         rows = nparray(['topic_id', 'word_id' , 'probability'])
-        values = nparray([topicid, wordid, self.wordprob[idx1-1, idx2-1]])
+        values = nparray([topicid, wordid, self.wordprob[idx1, idx2]])
         self.add_topic_words('topic_words', rows, values)
 
   def add_dataset(self, table, rows, value):
