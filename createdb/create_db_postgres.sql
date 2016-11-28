@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS topic (
 CREATE TABLE IF NOT EXISTS topic_words (
   topic_id SERIAL REFERENCES topic,
   word_id SERIAL,
-  probability SERIAL
+  probability REAL
 );
 
 CREATE TABLE IF NOT EXISTS dict (
