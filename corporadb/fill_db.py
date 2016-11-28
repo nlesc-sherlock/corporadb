@@ -2,17 +2,17 @@
 
 import random
 import string
-import datetime
 import collections
 import yaml
 import numpy
-from sklearn.metrics import pairwise_distances
-from dbase import *
+
+from dbase import connectToDB, closeDBConnection, commitToDB
 from numpy import array as nparray
 from numpy import append as npappend
-from numpy import ravel as npravel
 from dateutil.parser import parse as dateparse
 import pytz
+
+from corpora.dataimport import CorporaDataSet
 
 letters = string.ascii_lowercase[:12]
 
@@ -37,19 +37,21 @@ class fill_db:
     commitToDB(self.connection, self.cursor)
     closeDBConnection(self.connection, self.cursor)
     del self.connection, self.cursor
+    self.dataset = CorporaDataSet('Random')
 
   def create_dummy_data(self):
     self.datasetname = 'sherlock'
-    self.read_metadata_json('../data/metadata.json')
-    self.create_random_words(10000)
+    self.read_metadata_json(self.dataset.getMetadata)
+    self.worddict, self.lenwords, self.randwords = self.dataset.loadVocabulary()
     self.numtopics = 10
+
     # normalized probability matrix, words in a topic
-    self.wordprob = self.create_probabilities(self.numtopics, self.lenwords)
+    self.wordprob = self.dataset.getWordsInTopicMatrix(self.numtopics, self.lenwords)
     # normalized probability matrix, emails in a topic
     self.num_emails = len(self.metadata)
-    self.email_prob = self.create_probabilities(self.numtopics, self.num_emails)
+    self.email_prob = self.dataset.getDocsInTopicMatrix(self.numtopics, self.num_emails)
     # distance matrix between topics
-    self.find_distance_matrix(self.wordprob)
+    self.distance_matrix = self.dataset.getTopicDistanceMatrix(self.wordprob)
 
   def read_metadata_json(self, filename):
     '''
@@ -57,45 +59,6 @@ class fill_db:
     '''
     with open(filename, 'r') as f:
       self.metadata = yaml.load(f)
-
-  def create_random_words(self, num_words):
-    '''
-    create a random list of words
-    '''
-    # create n random words
-    randwords = set([get_random_name
-                         (letters, random.randint(2,12))
-                         for i in range(0,num_words)])
-    randwords = [x for x in randwords]
-    # create dictionary
-    self.worddict = collections.defaultdict(dict)
-    for i in range(0, len(randwords)):
-      self.worddict[randwords[i]] = i
-    self.lenwords = len(randwords)
-    self.randwords = randwords
-
-  def create_probabilities(self, collection, item):
-    '''
-    create probabilities of each word in each topic
-    '''
-    a = numpy.abs(numpy.random.randn(collection, item))
-    row_sums = a.sum(axis=0)
-    probabilities = a / row_sums[numpy.newaxis, :]
-    return probabilities
-
-  def find_distance_matrix(self, vector, metric='cosine'):
-    '''
-    compute distance matrix between topis using cosine or euclidean
-    distance (default=cosine distance)
-    '''
-    if metric == 'cosine':
-      self.distance_matrix = pairwise_distances(vector,
-                                                metric='cosine')
-      # diagonals should be exactly zero, so remove rounding errors
-      numpy.fill_diagonal(self.distance_matrix, 0)
-    if metric == 'euclidean':
-      self.distance_matrix = pairwise_distances(vector,
-                                                metric='euclidean')
 
   def insert_into_database(self, table, rows, value):
     row_sql = ', '.join(map(str, rows))
