@@ -46,13 +46,14 @@ CREATE TABLE IF NOT EXISTS distance (
   topic_id2 SERIAL
 );
 
-CREATE TABLE IF NOT EXISTS topic_words (
-  topic_id SERIAL REFERENCES topic(id),
-  word_id SERIAL,
-  probability REAL
-);
-
 CREATE TABLE IF NOT EXISTS dict (
+  id SERIAL PRIMARY KEY,
   word TEXT,
   lda_id SERIAL REFERENCES lda(id)
+);
+
+CREATE TABLE IF NOT EXISTS topic_words (
+  topic_id SERIAL REFERENCES topic(id),
+  word_id SERIAL REFERENCES dict(id),
+  probability REAL
 );
