@@ -11,6 +11,8 @@ from dbase import *
 from numpy import array as nparray
 from numpy import append as npappend
 from numpy import ravel as npravel
+from dateutil.parser import parse as dateparse
+import pytz
 
 letters = string.ascii_lowercase[:12]
 
@@ -101,9 +103,15 @@ class fill_db:
       self.cursor.execute("INSERT INTO {} ({}) VALUES ('{}')".format(
                           table, row_sql, value[0]))
     else:
-      self.cursor.execute("INSERT INTO {} ({}) VALUES {}".format(
-                          table, row_sql, tuple(value)))
+      try:
+        self.cursor.execute("INSERT INTO {} ({}) VALUES {}".format(
+                            table, row_sql, tuple(value)))
+      except Exception:
+        self.cursor.execute("INSERT INTO {} ({}) VALUES ".format(
+          table, row_sql) + "(" + ",".join("?"*len(value)) +")", tuple(value))
+        import pdb; pdb.set_trace()
     return self.cursor.lastrowid
+
 
   def fill_database(self):
     # Add new dataset
@@ -242,12 +250,14 @@ class fill_db:
     # loop over emails
     for email in range(0, self.num_emails):  # loop over emails
       em = self.metadata[email]
+      dtime_orig = dateparse(em['Date'])
+      dtime_utc = dtime_orig.astimezone(pytz.utc)
       values = nparray([em['Subject'], em['From'], em['To'], em['Cc'],
-                        em['Bcc'], em['Date']])
+                        em['Bcc'], dtime_orig, dtime_utc])
       values = nparray([value.replace("'", " ") if
-                        value else value for value in values])
+                        (value and isinstance(value, str)) else value for value in values])
       rows = nparray(['subject', 'sender', 'receiver', 'cc', 'bcc',
-                      'send_time'])
+                      'send_time', 'send_time_utc'])
       bool = nparray([True if a else False for a in values])
       self.add_email('email', rows[bool], values[bool])
       for idx2, t_id in enumerate(topic_ids):  # loop over topics
