@@ -27,11 +27,11 @@ class CorporaDataSet:
         return word2Id, len(word2Id), word2Id.keys()
 
     def getWordsInTopicMatrix(self):
-        wxt = mmread(self.setname + '_wordXtopic.mtx')
+        wxt = mmread(self.setname + '/LDA/wordXtopic.mtx')
         return wxt
 
     def getDocsInTopicMatrix(self):
-        dxt = mmread(self.setname + '_docXtopic.mtx')
+        dxt = mmread(self.setname + '/LDA/docXtopic.mtx')
         return dxt.T
 
     def create_probabilities(self, collection, item):
