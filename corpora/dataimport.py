@@ -27,21 +27,14 @@ class CorporaDataSet:
         return word2Id, len(word2Id), word2Id.keys()
 
     def getWordsInTopicMatrix(self):
-        wxt = mmread(self.setname + '/LDA/wordXtopic.mtx')
+        print 'Loading ' + self.setname + '_LDA/wordXtopic.mtx'
+        wxt = mmread(self.setname + '_LDA/wordXtopic.mtx')
         return wxt
 
     def getDocsInTopicMatrix(self):
-        dxt = mmread(self.setname + '/LDA/docXtopic.mtx')
-        return dxt.T
-
-    def create_probabilities(self, collection, item):
-        '''
-        create probabilities of each word in each topic
-        '''
-        a = numpy.abs(numpy.random.randn(collection, item))
-        row_sums = a.sum(axis=0)
-        probabilities = a / row_sums[numpy.newaxis, :]
-        return probabilities
+        print 'Loading ' + self.setname + '_LDA/docXtopic.mtx'
+        dxt = mmread(self.setname + '_LDA/docXtopic.mtx')
+        return dxt
 
     def getTopicDistanceMatrix(self, vector):
         return self.find_distance_matrix(vector)

@@ -25,22 +25,28 @@ def trainModel(docMatrix, saveDir, k, iterations=10):
         os.makedirs(saveDir)
 
     data = mmread(docMatrix)
+    numDocs,numWords = data.shape
+
     rowRange = sc.parallelize(xrange(data.shape[0]))
     dataSpark = spark.createDataFrame(rowRange
             .map(lambda i: Row(label=i, features=sparkToScipySparse(data.getrow(i)))))
     lda = LDA(k=k, maxIter=iterations)
     model = lda.fit(dataSpark)
+
+    wordXtopic = model.topicsMatrix().toArray()
+    wordXtopic = wordXtopic.T
+    wordXtopic = wordXtopic / wordXtopic.sum(axis=0)
+    assert wordXtopic.shape==(k, numWords)
+
+    docXtopic = model.transform(dataSpark)
+    docXtopic = docXtopic.collect()
+    docXtopic = np.array([ dxtI['topicDistribution'] for dxtI in docXtopic ])
+    docXtopic = docXtopic.T
+    assert docXtopic.shape==(k, numDocs), 'Failed for docXtopic'
+
     model.save(saveDir + 'lda.model')
-
-    topicMatrix = model.topicsMatrix().toArray()
-    topicMatrix = topicMatrix.T
-    topicMatrix = topicMatrix / topicMatrix.sum(axis=0)
-    mmwrite(saveDir + 'wordXtopic.mtx', topicMatrix)
-
-    docXTopics = model.transform(dataSpark)
-    dxT = docXTopics.collect()
-    dxT_v2 = np.array([ dxtI['topicDistribution'] for dxtI in dxT ])
-    mmwrite(saveDir + 'docXtopic.mtx', dxT_v2)
+    mmwrite(saveDir + 'wordXtopic.mtx', wordXtopic)
+    mmwrite(saveDir + 'docXtopic.mtx', docXtopic)
 
 # Main script
 if __name__ == '__main__':

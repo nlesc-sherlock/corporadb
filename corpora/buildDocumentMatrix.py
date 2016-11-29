@@ -14,11 +14,11 @@ def buildMatrix(inputDict, inputFolder, outputMatrix):
     nDocs = len(docs)
     nWords = len(wordDict)
 
-    sp = sparse.dok_matrix((nWords, nDocs))
+    sp = sparse.dok_matrix((nDocs, nWords))
     for docId,doc in enumerate(docs):
         docTokens = loadTokens(doc)
         for wordIdx,wordCount in wordDict.doc2bow(docTokens):
-            sp[wordIdx,docId] = wordCount
+            sp[docId,wordIdx] = wordCount
     print 'Words,Documents: ',(nWords, nDocs)
     mmwrite(outputMatrix, sp)
 
