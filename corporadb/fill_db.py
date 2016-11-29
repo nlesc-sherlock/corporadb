@@ -30,9 +30,11 @@ def create_dict(lst,keys):
 
 
 class fill_db:
-  def __init__(self, dbname):
+  def __init__(self, DB_NAME=None, DB_HOST=None, DB_PORT=None, USER_NAME=None,
+               USER_PASSWORD=None):
     self.create_dummy_data()
-    self.connection, self.cursor = connectToDB(dbname)
+    self.connection, self.cursor = connectToDB(DB_NAME, USER_NAME,
+                                           USER_PASSWORD, DB_HOST, DB_PORT)
     self.fill_database()
     commitToDB(self.connection, self.cursor)
     closeDBConnection(self.connection, self.cursor)
@@ -99,19 +101,19 @@ class fill_db:
 
   def insert_into_database(self, table, rows, value):
     row_sql = ', '.join(map(str, rows))
-    if len(value) == 1:
-      self.cursor.execute("INSERT INTO {} ({}) VALUES ('{}')".format(
-                          table, row_sql, value[0]))
-    else:
-      try:
-        self.cursor.execute("INSERT INTO {} ({}) VALUES {}".format(
-                            table, row_sql, tuple(value)))
-      except Exception:
-        self.cursor.execute("INSERT INTO {} ({}) VALUES ".format(
-          table, row_sql) + "(" + ",".join("?"*len(value)) +")", tuple(value))
-        import pdb; pdb.set_trace()
-    return self.cursor.lastrowid
-
+    parameters = '(' + ','.join(['%s' for i in value]) + ')'
+    #value = [x.text if isinstance(
+    #         x, lxml.objectify.StringElement) else x for x in value]
+    value = nparray(value)
+    sql = """INSERT INTO {} ({}) VALUES {} RETURNING id
+          """.format(table, row_sql, parameters)
+    try:
+      self.cursor.execute(sql, tuple(value))
+      return self.cursor.fetchone()[0] # return last insert id
+    except psycopg2.IntegrityError:
+      self.connection.rollback()
+    except psycopg2.ProgrammingError:
+      self.connection.rollback()
 
   def fill_database(self):
     # Add new dataset
@@ -134,7 +136,7 @@ class fill_db:
     if found set self.dataset_id to the entry in the database
     return boolean
     '''
-    self.cursor.execute('select rowid, name from dataset')
+    self.cursor.execute('select id as rowid, name from dataset')
     citems = self.cursor.fetchall()
     names = [citem['name'] for citem in citems]  # get all names
     if names:
@@ -153,7 +155,7 @@ class fill_db:
     if found set self.lda_settings_id to the entry in the database
     return boolean
     '''
-    self.cursor.execute('select rowid, number_of_topics from lda_settings')
+    self.cursor.execute('select id as rowid, number_of_topics from lda_settings')
     citems = self.cursor.fetchall()
     ntopics = [citem['number_of_topics'] for citem in citems]
     try:
@@ -168,7 +170,7 @@ class fill_db:
     check if lda is already in database
     if found set self.insert to False, else self.insert=True
     '''
-    self.cursor.execute('select rowid, dataset_id, lda_settings_id from lda')
+    self.cursor.execute('select id as rowid, dataset_id, lda_settings_id from lda')
     citems = self.cursor.fetchall()
     found_lda = [True if (citem['lda_settings_id']==self.lda_settings_id and
                           citem['dataset_id']==self.dataset_id)
@@ -321,4 +323,4 @@ class fill_db:
 
 
 if __name__=="__main__":
-  fill_db('../data/testdb.db')
+  fill_db('sherlock', None, None, 'sherlock', 'sherlock')
