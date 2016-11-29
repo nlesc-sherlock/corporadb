@@ -10,7 +10,6 @@ def buildMatrix(inputDict, inputFolder, outputMatrix):
     wordDict = gensim.corpora.Dictionary.load(inputDict)
     wordDict.filter_extremes()
 
-    # docs = loadDocuments(inputFolder)
     docs = glob(inputFolder + '/**/*.')
     nDocs = len(docs)
     nWords = len(wordDict)

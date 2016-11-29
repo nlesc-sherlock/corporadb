@@ -3,7 +3,7 @@
 import random
 import string
 import collections
-import yaml
+import json
 import numpy
 
 from dbase import connectToDB, closeDBConnection, commitToDB
@@ -31,17 +31,17 @@ def create_dict(lst,keys):
 
 class fill_db:
   def __init__(self, dbname):
+    self.dataset = CorporaDataSet('Random')
     self.create_dummy_data()
     self.connection, self.cursor = connectToDB(dbname)
     self.fill_database()
     commitToDB(self.connection, self.cursor)
     closeDBConnection(self.connection, self.cursor)
     del self.connection, self.cursor
-    self.dataset = CorporaDataSet('Random')
 
   def create_dummy_data(self):
     self.datasetname = 'sherlock'
-    self.read_metadata_json(self.dataset.getMetadata)
+    self.read_metadata_json(self.dataset.getMetadata())
     self.worddict, self.lenwords, self.randwords = self.dataset.loadVocabulary()
     self.numtopics = 10
 
@@ -58,7 +58,9 @@ class fill_db:
     read metadata from json filename
     '''
     with open(filename, 'r') as f:
-      self.metadata = yaml.load(f)
+      data = f.read()
+      self.metadata = json.loads(data.decode('cp1252'))
+
 
   def insert_into_database(self, table, rows, value):
     row_sql = ', '.join(map(str, rows))
@@ -284,4 +286,4 @@ class fill_db:
 
 
 if __name__=="__main__":
-  fill_db('../data/testdb.db')
+  fill_db('./data/testdb.db')

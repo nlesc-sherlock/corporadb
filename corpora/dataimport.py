@@ -1,8 +1,10 @@
 import random
 import string
-import collections
 import numpy
+import gensim
+from scipy.io import mmread
 from sklearn.metrics import pairwise_distances
+
 
 letters = string.ascii_lowercase[:12]
 
@@ -14,30 +16,23 @@ class CorporaDataSet:
         self.setname = setname
 
     def getMetadata(self):
-        '''Return the metadata'''
-        return '../data/metadata.json'
+        '''Return the json file containing metadata'''
+        return self.setname + '_clean/metadata.json'
 
     def loadVocabulary(self):
         '''Load vocabulary'''
-        num_words = 10000
-        # create n random words
-        randwords = set([get_random_name
-                             (letters, random.randint(2,12))
-                             for i in range(0,num_words)])
-        randwords = [x for x in randwords]
-        # create dictionary
-        worddict = collections.defaultdict(dict)
-        for i in range(0, len(randwords)):
-            worddict[randwords[i]] = i
-        lenwords = len(randwords)
-        randwords = randwords
-        return worddict, lenwords, randwords
+        id2Word = gensim.corpora.Dictionary.load(self.setname + '.dict')
+        id2Word.filter_extremes()
+        word2Id = { word:id for id,word in id2Word.iteritems() }
+        return word2Id, len(word2Id), word2Id.keys()
 
-    def getWordsInTopicMatrix(self, collection, item):
-        return self.create_probabilities(collection, item)
+    def getWordsInTopicMatrix(self):
+        wxt = mmread(self.setname + '_wordXtopic.mtx')
+        return wxt
 
-    def getDocsInTopicMatrix(self, collection, item):
-        return self.create_probabilities(collection, item)
+    def getDocsInTopicMatrix(self):
+        dxt = mmread(self.setname + '_docXtopic.mtx')
+        return dxt.T
 
     def create_probabilities(self, collection, item):
         '''
@@ -49,7 +44,7 @@ class CorporaDataSet:
         return probabilities
 
     def getTopicDistanceMatrix(self, vector):
-        self.find_distance_matrix(vector)
+        return self.find_distance_matrix(vector)
 
     def find_distance_matrix(self, vector, metric='cosine'):
         '''
