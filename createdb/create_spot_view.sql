@@ -1,20 +1,18 @@
 CREATE VIEW spot_view AS
 select
-  ldas.number_of_topics as n_topics,
-  da.id as dataset_id,
-  da.name as dataset_name,
-  email.subject, email.sender, email.receiver, email.cc, email.bcc, send_time,
-  topic.name as topicname, topic.id as topic_id, lda.id as lda_id,
-  emb.email_id as emailid,
-  emb.topic_probability, dis.distance,
-  dis.topic_id1 as dist_topic1, dis.topic_id2 as dist_topic2,
-  dic.word as word,
-  towo.probability as word_probability
-FROM lda_settings ldas JOIN lda ON (ldas.id = lda.lda_settings_id)
-            JOIN dataset da ON (da.id = lda.dataset_id)
-            JOIN email  ON (da.id = email.dataset_id)
-            JOIN topic ON (topic.lda_id = lda.id)
-            JOIN distance dis ON (dis.lda_id = lda.id)
-            JOIN email_blob emb ON (emb.email_id = email.id)
-            JOIN dict dic ON (dic.lda_id = topic.id)
-            JOIN topic_words towo ON (towo.topic_id = topic.id)
+  lda_settings.id as lda_settings_id,
+  lda_settings.number_of_topics as lda_settings_ntopics,
+  email.subject as email_subject,
+  email.sender as email_sender,
+  email.receiver as email_receiver,
+  email.cc as email_cc,
+  email.bcc as email_bcc,
+  email.send_time as email_send_time,
+  email_blob.topic_probability as email_topic_prob,
+  topic.id as topic_id,
+  topic.name as topic_name
+FROM dataset JOIN lda ON (dataset.id = lda.dataset_id)
+             JOIN lda_settings ON (lda.lda_settings_id = lda_settings.id)
+             JOIN email ON (dataset.id = email.dataset_id)
+             JOIN email_blob ON (email.id = email_blob.email_id)
+             JOIN topic ON (lda.id = topic.lda_id)
