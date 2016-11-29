@@ -1,0 +1,4 @@
+rawfile:
+  class: File
+  path: /home/vincent/sherlock/enron_mail_small/
+cleanedfile: /home/vincent/sherlock/enron_mail_small_output/
