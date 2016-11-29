@@ -1,6 +1,11 @@
 # Howto
-create a local sqlite database with the following command:
+create a postgres database with the following command:
 
 ```
-sqlite3 $dbasename < create_db.sql
+username=sherlock
+dbname=sherlock
+sudo -u postgres createuser -D -A -P $username
+sudo -u postgres createdb -O $username $dbname
+psql -U $username $dbname < create_db_postgres.sql
+psql -U $username $dbname < create_spot_view.sql
 ```

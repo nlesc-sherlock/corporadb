@@ -1,53 +1,63 @@
-CREATE TABLE IF NOT EXISTS lda (
-  lda_settings_id SERIAL,
-  dataset_id SERIAL
-);
-
 CREATE TABLE IF NOT EXISTS lda_settings (
-  number_of_topics SERIAL
+  id SERIAL PRIMARY KEY,
+  number_of_topics INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS dataset (
+  id SERIAL PRIMARY KEY,
   name TEXT
 );
 
+CREATE TABLE IF NOT EXISTS lda (
+  id SERIAL PRIMARY KEY,
+  lda_settings_id INTEGER REFERENCES lda_settings(id),
+  dataset_id INTEGER REFERENCES dataset(id)
+);
+
 CREATE TABLE IF NOT EXISTS email (
+  id SERIAL PRIMARY KEY,
   subject TEXT,
   sender TEXT,
   receiver TEXT,
   cc TEXT,
   bcc TEXT,
   email_txt TEXT,
-  send_time TIMESTAMP [WITHOUT TIME ZONE],
-  dataset_id INTEGER NOT NULL REFERENCES dataset
-);
-
-CREATE TABLE IF NOT EXISTS email_blob (
-  email_id INTEGER NOT NULL REFERENCES email,
-  topic_probability REAL NOT NULL,
-  topic_id SERIAL REFERENCES topic,
-  lda_id SERIAL REFERENCES lda
-);
-
-CREATE TABLE IF NOT EXISTS distance (
-  lda_id SERIAL REFERENCES lda,
-  distance REAL NOT NULL,
-  topic_id1 SERIAL,
-  topic_id2 SERIAL
+  send_time TIMESTAMP,
+  send_time_utc TIMESTAMP,
+  dataset_id INTEGER NOT NULL REFERENCES dataset(id)
 );
 
 CREATE TABLE IF NOT EXISTS topic (
-  lda_id INT UNSIGNED NOT NULL,
+  id SERIAL PRIMARY KEY,
+  lda_id INTEGER REFERENCES lda(id),
   name TEXT
 );
 
-CREATE TABLE IF NOT EXISTS topic_words (
-  topic_id SERIAL REFERENCES topic,
-  word_id SERIAL,
-  probability REAL
+CREATE TABLE IF NOT EXISTS email_blob (
+  id SERIAL PRIMARY KEY,
+  email_id INTEGER NOT NULL REFERENCES email(id),
+  topic_probability REAL NOT NULL,
+  topic_id INTEGER REFERENCES topic(id),
+  lda_id INTEGER REFERENCES lda(id)
+);
+
+CREATE TABLE IF NOT EXISTS distance (
+  id SERIAL PRIMARY KEY,
+  lda_id SERIAL REFERENCES lda(id),
+  distance REAL NOT NULL,
+  topic_id1 INTEGER,
+  topic_id2 INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS dict (
+  id SERIAL PRIMARY KEY,
   word TEXT,
-  lda_id SERIAL REFERENCES lda
+  lda_id INTEGER REFERENCES lda(id)
+);
+
+CREATE TABLE IF NOT EXISTS topic_words (
+  id SERIAL PRIMARY KEY,
+  topic_id INTEGER REFERENCES topic(id),
+  word_id INTEGER REFERENCES dict(id),
+  probability REAL
 );
