@@ -3,7 +3,6 @@
 import random
 import string
 import collections
-import json
 import numpy
 from dbase import connectToDB, closeDBConnection, commitToDB
 from numpy import array as nparray
@@ -11,6 +10,7 @@ from numpy import append as npappend
 from dateutil.parser import parse as dateparse
 import pytz
 from corpora.dataimport import CorporaDataSet
+import yaml
 
 letters = string.ascii_lowercase[:12]
 
@@ -32,7 +32,7 @@ class fill_db:
                USER_PASSWORD=None):
     self.connection, self.cursor = connectToDB(DB_NAME, USER_NAME,
                                            USER_PASSWORD, DB_HOST, DB_PORT)
-    self.dataset = CorporaDataSet('Random')
+    self.dataset = CorporaDataSet('../data/enron_mail_translated_en')
     self.create_dummy_data()
     self.fill_database()
     commitToDB(self.connection, self.cursor)
@@ -43,13 +43,17 @@ class fill_db:
     self.datasetname = 'sherlock'
     self.read_metadata_json(self.dataset.getMetadata())
     self.worddict, self.lenwords, self.randwords = self.dataset.loadVocabulary()
-    self.numtopics = 10
-
     # normalized probability matrix, words in a topic
-    self.wordprob = self.dataset.getWordsInTopicMatrix(self.numtopics, self.lenwords)
+    #self.wordprob = self.dataset.getWordsInTopicMatrix()
+    #self.numtopics = numpy.shape(self.wordprob)[0]
+    self.email_prob = self.dataset.getWordsInTopicMatrix()
+    self.numtopics = numpy.shape(self.email_prob)[0]
+    print(self.numtopics)
     # normalized probability matrix, emails in a topic
     self.num_emails = len(self.metadata)
-    self.email_prob = self.dataset.getDocsInTopicMatrix(self.numtopics, self.num_emails)
+    #self.email_prob = self.dataset.getDocsInTopicMatrix()
+    self.wordprob = self.dataset.getDocsInTopicMatrix()
+    #import pdb; pdb.set_trace()
     # distance matrix between topics
     self.distance_matrix = self.dataset.getTopicDistanceMatrix(self.wordprob)
 
@@ -57,10 +61,8 @@ class fill_db:
     '''
     read metadata from json filename
     '''
-    with open(filename, 'r') as f:
-      data = f.read()
-      self.metadata = json.loads(data.decode('cp1252'))
-
+    with open(filename, 'r', encoding = "ISO-8859-1") as f:
+      self.metadata = yaml.load(f)
 
   def insert_into_database(self, table, rows, value):
     row_sql = ', '.join(map(str, rows))
