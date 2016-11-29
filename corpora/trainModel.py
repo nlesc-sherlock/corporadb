@@ -1,18 +1,16 @@
 from pyspark.ml.clustering import LDA
 from pyspark.ml.linalg import SparseVector
 from pyspark.sql import Row
-from scipy.io import mmread
+from scipy.io import mmread, mmwrite
+import numpy as np
 import argparse
 
 from pyspark import SparkContext
 from pyspark.sql.session import SparkSession
 
-sc = SparkContext("local", "Simple App1")
+sc = SparkContext("local[4]", "Simple App1")
 spark = SparkSession.builder \
-    .master("local") \
-    .appName("Word Count") \
-    .config("spark.some.config.option", "some-value") \
-    .getOrCreate()
+     .getOrCreate()
 
 def sparkToScipySparse(spRow):
     '''Convert scipy.sparse to spark.sparse vector'''
@@ -24,12 +22,23 @@ def sparkToScipySparse(spRow):
 def trainModel(docMatrix, savemodel, k, iterations=10):
     data = mmread(docMatrix)
     rowRange = sc.parallelize(xrange(data.shape[0]))
-    # rowRange = sc.parallelize(xrange(10))
     dataSpark = spark.createDataFrame(rowRange
             .map(lambda i: Row(label=i, features=sparkToScipySparse(data.getrow(i)))))
     lda = LDA(k=k, maxIter=iterations)
     model = lda.fit(dataSpark)
     model.save(savemodel)
+
+    topicMatrix = model.topicsMatrix().toArray()
+    topicMatrix = topicMatrix.T
+    topicMatrix = topicMatrix / topicMatrix.sum(axis=0)
+    print 'TODO: give wordXtopic.mtx a path'
+    mmwrite('wordXtopic.mtx', topicMatrix)
+
+    print 'TODO: give docXtopic.mtx a path'
+    docXTopics = model.transform(dataSpark)
+    dxT = docXTopics.collect()
+    dxT_v2 = np.array([ dxtI['topicDistribution'] for dxtI in dxT ])
+    mmwrite('docXtopic.mtx', dxT_v2)
 
 # Main script
 if __name__ == '__main__':

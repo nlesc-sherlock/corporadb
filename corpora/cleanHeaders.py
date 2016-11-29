@@ -85,8 +85,7 @@ def preProcess(inputfolder,outputfolder):
         except:
             print("Error with doc: {0}".format(doc))
     if(metaData):
-        # saveMetaData(outputfolder + '/metadata.json', metaData)
-        pass
+        saveMetaData(outputfolder + '/metadata.json', metaData)
 
 # Main script
 if __name__ == '__main__':
