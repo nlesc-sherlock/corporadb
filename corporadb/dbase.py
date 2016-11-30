@@ -6,24 +6,40 @@ license:        APACHE 2.0
 author:         Ronald van Haren, NLeSC (r.vanharen@esciencecenter.nl)
 '''
 
-import sqlite3
+import psycopg2
+import psycopg2.extras
+from psycopg2.extensions import register_adapter, AsIs
+import numpy
 
-def connectToDB(dbName = None):
+def addapt_numpy_float64(numpy_float64):
+    return AsIs(numpy_float64)
+
+def addapt_numpy_int64(numpy_int64):
+    return AsIs(numpy_int64)
+
+def connectToDB(dbName=None, userName=None, dbPassword=None, dbHost=None,
+                dbPort=None, dbCursor=psycopg2.extras.DictCursor):
     '''
-    Connect to a specified MySQL DB and return connection and cursor objects.
+    Connect to a specified PostgreSQL DB and return connection and cursor objects.
     '''
     # Start DB connection
     try:
-        connection = sqlite3.connect(dbName)
-    except Exception as E:
-        err_msg = 'Unable to connect to %s DB.'% dbName
-        #logging.error((err_msg, "; %s: %s" % (E.__class__.__name__, E)))
+        connectionString = "dbname='" + dbName + "'"
+        if userName != None and userName != '':
+            connectionString += " user='" + userName + "'"
+        if dbHost != None and dbHost != '':
+            connectionString += " host='" + dbHost + "'"
+        if dbPassword != None and dbPassword != '':
+            connectionString += " password='" + dbPassword + "'"
+        if dbPort != None:
+            connectionString += " port='" + str(dbPort) + "'"
+        connection  = psycopg2.connect(connectionString)
+        register_adapter(numpy.float64, addapt_numpy_float64)
+        register_adapter(numpy.int64, addapt_numpy_int64)
+    except:
         raise
-    msg = 'Successful connected to %s DB.'%dbName
-    #logging.debug(msg)
     # if the connection succeeded get a cursor
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
+    cursor = connection.cursor(cursor_factory=dbCursor)
     return connection, cursor
 
 
@@ -33,9 +49,10 @@ def closeDBConnection(connection, cursor):
     '''
     cursor.close()
     connection.close()
-    msg = 'Connection to the DB is closed.'
-    #logging.debug(msg)
+    # msg = 'Connection to the DB is closed.'
+    # logging.debug(msg)
     return
+
 
 def commitToDB(connection, cursor):
     '''
