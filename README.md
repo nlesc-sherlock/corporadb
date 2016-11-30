@@ -1,6 +1,23 @@
 # corporadb
 db backend corpora
 
+## Requirements
+Install Python requirements from `requirements.txt` file via pip:
+
+```
+$ pip install -r requirements.txt
+```
+
+*NOTE:* You might need to install PostgreSQL development package (on Linux):
+
+```
+sudo apt-get install libpq-dev
+```
+or
+```
+sudo yum install postgresql-devel
+```
+
 ## Step by step run:
 
 Clean headers

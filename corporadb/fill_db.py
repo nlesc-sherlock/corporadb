@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import argparse
 import random
 import string
 import collections
@@ -11,6 +11,7 @@ from numpy import append as npappend
 from dateutil.parser import parse as dateparse
 import pytz
 from corpora.dataimport import CorporaDataSet
+import psycopg2
 
 letters = string.ascii_lowercase[:12]
 
@@ -29,10 +30,10 @@ def create_dict(lst,keys):
 
 class fill_db:
   def __init__(self, DB_NAME=None, DB_HOST=None, DB_PORT=None, USER_NAME=None,
-               USER_PASSWORD=None):
+               USER_PASSWORD=None, datasetName=None, nTopics=0):
     self.connection, self.cursor = connectToDB(DB_NAME, USER_NAME,
                                            USER_PASSWORD, DB_HOST, DB_PORT)
-    self.dataset = CorporaDataSet('Random')
+    self.dataset = CorporaDataSet(datasetName)
     self.create_dummy_data()
     self.fill_database()
     commitToDB(self.connection, self.cursor)
@@ -46,10 +47,10 @@ class fill_db:
     self.numtopics = 10
 
     # normalized probability matrix, words in a topic
-    self.wordprob = self.dataset.getWordsInTopicMatrix(self.numtopics, self.lenwords)
+    self.wordprob = self.dataset.getWordsInTopicMatrix()
     # normalized probability matrix, emails in a topic
     self.num_emails = len(self.metadata)
-    self.email_prob = self.dataset.getDocsInTopicMatrix(self.numtopics, self.num_emails)
+    self.email_prob = self.dataset.getDocsInTopicMatrix()
     # distance matrix between topics
     self.distance_matrix = self.dataset.getTopicDistanceMatrix(self.wordprob)
 
@@ -286,4 +287,13 @@ class fill_db:
 
 
 if __name__=="__main__":
-  fill_db('sherlock', None, None, 'sherlock', 'sherlock')
+  parser = argparse.ArgumentParser(description="Tokenize and create dictionary out of given files")
+  parser.add_argument('dataset_name')
+  parser.add_argument('number_topics')
+  args = parser.parse_args()
+  datasetName = args.dataset_name  # 'enron_mail_clean.dict'
+  nTopics = args.number_topics  # 'enron_mail_clean_tokens'
+
+  # fill_db('sherlock', None, None, 'sherlock', 'sherlock')
+  fill_db(DB_NAME='postgres', DB_HOST='localhost', USER_NAME='postgres', DB_PORT=5432,
+        USER_PASSWORD='mysecretpassword', datasetName=datasetName, nTopics=nTopics)
