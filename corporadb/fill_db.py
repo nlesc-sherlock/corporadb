@@ -34,17 +34,17 @@ class fill_db:
     self.connection, self.cursor = connectToDB(DB_NAME, USER_NAME,
                                            USER_PASSWORD, DB_HOST, DB_PORT)
     self.dataset = CorporaDataSet(datasetName)
-    self.create_dummy_data()
+    self.numtopics = nTopics
+    self.load_data()
     self.fill_database()
     commitToDB(self.connection, self.cursor)
     closeDBConnection(self.connection, self.cursor)
     del self.connection, self.cursor
 
-  def create_dummy_data(self):
+  def load_data(self):
     self.datasetname = 'sherlock'
     self.read_metadata_json(self.dataset.getMetadata())
     self.worddict, self.lenwords, self.randwords = self.dataset.loadVocabulary()
-    self.numtopics = 10
 
     # normalized probability matrix, words in a topic
     self.wordprob = self.dataset.getWordsInTopicMatrix()
