@@ -75,6 +75,8 @@ def preProcess(inputfolder,outputfolder):
             body, emailMeta = extractEmailBody(doc)
             body = removeOriginalQuote(body)
             origName = doc.replace(inputfolder, '')
+            if origName.startswith('/'):
+                origName = origName[1:]
             saveName = os.path.join(outputfolder, origName)
             saveDir  = os.path.dirname(saveName)
             if not os.path.exists(saveDir):
@@ -82,8 +84,10 @@ def preProcess(inputfolder,outputfolder):
             saveEmailBody(saveName, body)
             emailMeta['id'] = origName
             metaData.append(emailMeta)
-        except:
+        except Exception as e:
             print("Error with doc: {0}".format(doc))
+            print e
+    print "Finished parsing documents..."
     if(metaData):
         # saveMetaData(outputfolder + '/metadata.json', metaData)
         pass
