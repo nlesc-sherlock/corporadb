@@ -1,18 +1,18 @@
 cwlVersion: v1.0
 class: CommandLineTool
-label: CLEAN FILE HEADERS
-baseCommand: python corpora/cleanHeaders.py
+label: BUILD DICTIONARY FROM EMAILS
+baseCommand: python corpora/buildDict.py
 inputs:
   inputdir:
     type: Directory
     inputBinding:
       position: 1
-  cleandir:
+  dictfile:
     type: string
     inputBinding:
       position: 2
 outputs:
-  outputdir:
-    type: Directory
+  output:
+    type: File
     outputBinding:
-      glob: $(inputs.cleandir)
+      glob: $(inputs.dictfile)

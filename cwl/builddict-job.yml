@@ -1,0 +1,4 @@
+inputdir:
+  class: Directory
+  path: /home/vincent/sherlock/enron_mail_small/
+dictfile: /home/vincent/sherlock/enron_mail_small.dict
