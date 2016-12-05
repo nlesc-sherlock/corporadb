@@ -1,4 +1,4 @@
-rawfile:
-  class: File
+inputdir:
+  class: Directory
   path: /home/vincent/sherlock/enron_mail_small/
-cleanedfile: /home/vincent/sherlock/enron_mail_small_output/
+cleandir: /home/vincent/sherlock/enron_mail_small_output/

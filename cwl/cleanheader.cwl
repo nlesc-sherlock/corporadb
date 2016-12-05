@@ -4,16 +4,16 @@ label: CLEAN FILE HEADERS
 baseCommand: python corpora/cleanHeaders.py
 arguments: ["-d", $(runtime.outdir)]
 inputs:
-  rawfile:
-    type: File
+  inputdir:
+    type: Directory
     inputBinding:
       position: 1
-  cleanedfile:
+  cleandir:
     type: string
     inputBinding:
       position: 2
 outputs:
-  cleaned_out:
-    type: File
+  outputdir:
+    type: Directory
     outputBinding:
-      glob: $(inputs.cleanedfile)
+      glob: $(inputs.cleandir)
