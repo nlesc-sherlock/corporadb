@@ -3,16 +3,16 @@ class: Workflow
 
 inputs:
     inputdir: Directory
-    tempdir: string
+    workdir: string
 
 outputs: []
 
 steps:
-    run: cleanheaders.cwl
+    run: cleanheader.cwl
     in:
-        maildir: inputdir
-        cleandir: tempdir
+        inputdir: inputdir
+        cleandir: workdir
     run: tokenization.cwl
     in:
-        inputdir: tempdir
-        outputdir: tempdir
+        inputdir: workdir
+        cleandir: workdir
