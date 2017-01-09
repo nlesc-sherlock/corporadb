@@ -1,7 +1,7 @@
 cwlVersion: v1.0
 class: CommandLineTool
 label: TOKENIZE MAIL BODIES
-baseCommand: python corpora/tokenization.py
+baseCommand: tokenization.py
 inputs:
   inputdir:
     type: Directory

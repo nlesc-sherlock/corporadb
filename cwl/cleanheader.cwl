@@ -1,7 +1,7 @@
 cwlVersion: v1.0
 class: CommandLineTool
 label: CLEAN FILE HEADERS
-baseCommand: [python, /home/vincent/sherlock/corporadb/corpora/cleanHeaders.py]
+baseCommand: cleanHeaders.py
 inputs:
   inputdir:
     type: Directory
