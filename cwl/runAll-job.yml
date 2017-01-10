@@ -1,4 +1,7 @@
 inputdir:
     class: Directory
-    path:  /home/vincent/sherlock/enron_mail_small/
-tempdir: /tmp/corpora
+    path:  enron_mail
+cleandir: enron_mail_clean
+tokendir: enron_mail_clean_tokens
+dictfile: enron_mail.dict
+matrixfile: enron_mail.mtx

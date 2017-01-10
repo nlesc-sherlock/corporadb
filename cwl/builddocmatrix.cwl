@@ -1,18 +1,22 @@
 cwlVersion: v1.0
 class: CommandLineTool
 label: BUILD DICTIONARY FROM EMAILS
-baseCommand: buildDict.py
+baseCommand: buildDocumentMatrix.py
 inputs:
   inputdir:
     type: Directory
     inputBinding:
+      position: 2
+  inputdict:
+    type: File
+    inputBinding:
       position: 1
-  dictfile:
+  matrixfile:
     type: string
     inputBinding:
-      position: 2
+      position: 3
 outputs:
   output:
     type: File
     outputBinding:
-      glob: $(inputs.dictfile)
+      glob: $(inputs.matrixfile)

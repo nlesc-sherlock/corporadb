@@ -35,3 +35,9 @@ Build document matrix
 ```shell
 $ cwltool builddocmatrix.cwl builddocmatrix-job.yml
 ```
+
+# Complete workflow run:
+
+```shell
+$ cwltool runAll.cwl runAll.yml
+```

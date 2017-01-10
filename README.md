@@ -27,26 +27,26 @@ $ sudo yum install python-devel libyaml-devel libssl-devel libffi-devel
 
 Clean headers
 ```shell
-$ python corpora/cleanHeaders.py data/enron_mail/ data/enron_mail/
+$ python corpora/cleanHeaders.py cwl/enron_mail/ cwl/enron_mail_clean/
 ```
 
 Create tokens
 ```shell
-$ python corpora/tokenization.py data/enron_mail/ data/enron_mail/
+$ python corpora/tokenization.py cwl/enron_mail_clean/ cwl/enron_mail_clean_tokens/
 ```
 
 Merge tokens into dictionary
 ```shell
-$ python corpora/buildDict.py data/enron_mail/ data/enron_mail.dict
+$ python corpora/buildDict.py cwl/enron_mail_clean_tokens/ cwl/enron_mail.dict
 ```
 
 Build document matrix
 ```shell
-$ python corpora/buildDocumentMatrix.py data/enron_mail.dict data/enron_mail/ data/enron_mail.mtx
+$ python corpora/buildDocumentMatrix.py cwl/enron_mail.dict cwl/enron_mail_clean_tokens/ cwl/enron_mail.mtx
 ```
 
 RUN:
 ```
 $ SPARK_HOME=/home/carlosm/Projects/Sherlock/spark-2.0.1/bin/
-$ SPARK_HOME/spark-submit corpora/trainModel.py data/enron_mail.mtx data/enron_mail.lda.model 5 10
+$ SPARK_HOME/spark-submit corpora/trainModel.py cwl/enron_mail.mtx cwl/enron_mail.lda.model 5 10
 ```
