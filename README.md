@@ -21,7 +21,14 @@ whereas in Fedora or Red Hat distros type
 
 ```shell
 $ sudo yum install python-devel libyaml-devel libssl-devel libffi-devel
+
 ```
+
+You will also need to download some NLTK data:
+```shell
+$ python -m nltk.downloader stopwords
+```
+where you have activated your virtual environment, if you use one.
 
 ## Step by step run:
 
