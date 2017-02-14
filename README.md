@@ -54,6 +54,6 @@ $ python corpora/buildDocumentMatrix.py cwl/enron_mail.dict cwl/enron_mail_clean
 
 RUN:
 ```
-$ $SPARK_HOME=/home/carlosm/Projects/Sherlock/spark-2.0.1/bin/
+$ SPARK_HOME=/home/carlosm/Projects/Sherlock/spark-2.0.1/bin/
 $ $SPARK_HOME/spark-submit corpora/trainModel.py cwl/enron_mail.mtx cwl/enron_mail.lda.model 5 10
 ```
