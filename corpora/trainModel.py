@@ -2,12 +2,14 @@ from pyspark.ml.clustering import LDA
 from pyspark.ml.linalg import SparseVector
 from pyspark.sql import Row
 from scipy.io import mmread
-import argparse
-
 from pyspark import SparkContext
 from pyspark.sql.session import SparkSession
+import multiprocessing
+import argparse
 
-sc = SparkContext("local", "Simple App1")
+# Always use all available cores
+cpus = multiprocessing.cpu_count()
+sc = SparkContext("local[" + str(cpus) + "]", "Simple App1")
 spark = SparkSession.builder \
     .master("local") \
     .appName("Word Count") \
