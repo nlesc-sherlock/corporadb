@@ -1,7 +1,11 @@
 # corporadb
 db backend corpora
 
-## Installation instructions
+For project Sherlock, our team aims to use NLP tools to analyse large collections of documents. The original description of the team's goals are on Sherlock's [repo](https://github.com/nlesc-sherlock/Sherlock/blob/master/topics/analyzing_document_collections/analyzing_large_document_collections.md).
+
+The following sections describes the process for going from a bunch of plain text documents (emails in this case) to a nice visualization of the topics in these documents.
+
+## 1 Installation instructions
 Optionally create a virtual python environment in this repo clone.
 Then type
 
@@ -30,7 +34,9 @@ $ python -m nltk.downloader stopwords
 ```
 where you have activated your virtual environment, if you use one.
 
-## Step by step run:
+## 2 Pre-processing:
+
+### 2.1 Preprocessing using step by step Python commands
 
 Clean headers
 ```shell
@@ -52,6 +58,12 @@ Build document matrix
 $ python corpora/buildDocumentMatrix.py cwl/enron_mail.dict cwl/enron_mail_clean_tokens/ cwl/enron_mail.mtx
 ```
 
+### 2.2 Preprocessing using a CWL workflow
+
+See [this](https://github.com/nlesc-sherlock/corporadb/tree/master/cwl) tutorial
+
+## 3 Train model
+
 Next, the LDA model is trained in Spark. Follow installation instructions from here: https://spark.apache.org/docs/latest/
 
 RUN:
@@ -59,3 +71,10 @@ RUN:
 $ SPARK_HOME=(path to you Spark installation, e.g. /home/johndoe/spark-2.0.1/bin/)
 $ $SPARK_HOME/spark-submit corpora/trainModel.py cwl/enron_mail.mtx cwl/enron_mail.lda.model 5 10
 ```
+## 4 Create and fill database
+
+See [this](https://github.com/nlesc-sherlock/corporadb/tree/master/createdb) tutorial
+
+## 5 Create visualisation
+
+...
