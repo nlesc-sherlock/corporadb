@@ -1,0 +1,4 @@
+inputdir:
+  class: Directory
+  path: enron_mail
+cleandir: enron_mail_clean

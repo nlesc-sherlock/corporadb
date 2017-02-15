@@ -9,13 +9,15 @@ def saveTokens(filename, tokens):
             fout.write(token + '\n')
 
 def doTokenization(inputfolder,outputfolder):
-    docs = glob(inputfolder + '/**/*.')
+    inputdirname = inputfolder.rstrip('/')
+    outputdirname = outputfolder.rstrip('/')
+    docs = glob(inputdirname + '/**/*.')
     tokenizer = Tokenizer(filters=[filter_email])
     for doc in docs:
         try:
             tokens = tokenizer.tokenize_file(doc)
             baseName=os.path.basename(doc)
-            outputdir = os.path.dirname(doc.replace(inputfolder, outputfolder))
+            outputdir = os.path.dirname(doc.replace(inputdirname, outputdirname))
             targetFile = os.path.join(outputdir,baseName)
             if not os.path.exists(outputdir):
                 os.makedirs(outputdir)

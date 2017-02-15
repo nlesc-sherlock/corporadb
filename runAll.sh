@@ -1,10 +1,17 @@
+DATASET=cwl/enron_mail
+# DATASET=cwl/enron_mail_translated_en
+# DATASET=cwl/enron_mail_translated_nl
+# DATASET=cwl/enron_mail_random
+
+# Change to your installation path
 SPARK_HOME=/home/carlosm/Projects/Sherlock/spark-2.0.1/bin/
-ORIG_DATA=data/enron_mail_translated_en/
-CLEAN_DATA=data/enron_mail_translated_en_clean/
-CLEAN_TOKENS=data/enron_mail_translated_en_clean_tokens/
-DATA_DICT=data/enron_mail_translated_en.dict
-DOC_MATRIX=data/enron_mail_translated_en.mtx
-LDA_MODEL=data/enron_mail_translated_en.lda.model
+
+ORIG_DATA=$DATASET
+CLEAN_DATA=${DATASET}_clean/
+CLEAN_TOKENS=${DATASET}_clean_tokens/
+DATA_DICT=${DATASET}.dict
+DOC_MATRIX=${DATASET}.mtx
+LDA_MODEL=${DATASET}.lda.model
 
 echo 'RUNNING CLEAN HEADERS ======================='
 python corpora/cleanHeaders.py $ORIG_DATA $CLEAN_DATA

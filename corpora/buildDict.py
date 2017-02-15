@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import gensim
 import argparse
 from corpora.utils import loadDocuments

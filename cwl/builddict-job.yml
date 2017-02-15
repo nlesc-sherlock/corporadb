@@ -1,0 +1,4 @@
+inputdir:
+  class: Directory
+  path: enron_mail_clean_tokens
+dictfile: enron_mail.dict

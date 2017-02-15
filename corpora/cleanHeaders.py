@@ -1,19 +1,5 @@
 #!/usr/bin/env python
 
-# Copyright 2015 Netherlands eScience Center <info@esciencecenter.nl>
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from glob2 import glob
 from email.parser import Parser
 import json
@@ -75,6 +61,8 @@ def preProcess(inputfolder,outputfolder):
             body, emailMeta = extractEmailBody(doc)
             body = removeOriginalQuote(body)
             origName = doc.replace(inputfolder, '')
+            if origName.startswith('/'):
+                origName = origName[1:]
             saveName = os.path.join(outputfolder, origName)
             saveDir  = os.path.dirname(saveName)
             if not os.path.exists(saveDir):
@@ -82,8 +70,10 @@ def preProcess(inputfolder,outputfolder):
             saveEmailBody(saveName, body)
             emailMeta['id'] = origName
             metaData.append(emailMeta)
-        except:
+        except Exception as e:
             print("Error with doc: {0}".format(doc))
+            print e
+    print "Finished parsing documents..."
     if(metaData):
         saveMetaData(outputfolder + '/metadata.json', metaData)
 
