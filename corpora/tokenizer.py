@@ -74,7 +74,7 @@ class Tokenizer(object):
         else:
             self.exclude_words = frozenset(exclude_words)
 
-        self.filters = filters
+        self.text_filters = text_filters
         self.word_filters = word_filters
 
     def tokenize_file(self, f):
@@ -93,25 +93,26 @@ class Tokenizer(object):
         text : str
             Text to tokenize.
         """
-        for f in self.filters:
+        for f in self.text_filters:
             text = f(text)
 
         words = []
         for s in self.nlp.split(self.nlp.parse(text)):
-            for word, tag in s.tagged:
-                if tag not in self.nlp_tags: continue
+            for word,tag in s.tagged:
+                if tag not in self.nlp_tags:
+                    continue
                 word = word.lower()
-                if(filter_word(word)): words.append(word)
-
+                if(self.filter_word(word)):
+                    words.append(word)
         return words
 
-        def filter_word(word):
-            if word in self.exclude_words:
+    def filter_word(self, word):
+        if word in self.exclude_words:
+            return False
+        for f in self.word_filters:
+            if f(word):
                 return False
-            for f in self.word_filters:
-                if f(word):
-                    return False
-            return True
+        return True
 
 forward_pattern = re.compile('[\r\n]>[^\r\n]*[\r\n]')
 html_patten = re.compile('<[^<]+?>')

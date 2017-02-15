@@ -15,7 +15,7 @@ def doTokenization(inputfolder,outputfolder, lang='en'):
     inputdirname = inputfolder.rstrip('/')
     outputdirname = outputfolder.rstrip('/')
     docs = glob(inputdirname + '/**/*.')
-    tokenizer = Tokenizer(filters = [filter_email], word_filters = [filterWord], lang = lang)
+    tokenizer = Tokenizer(text_filters = [filter_email], word_filters = [filterWord], lang = lang)
     for doc in docs:
         try:
             tokens = tokenizer.tokenize_file(doc)
