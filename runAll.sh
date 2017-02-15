@@ -14,7 +14,7 @@ while getopts ":d:o:h:l:n:m:" OPT; do
     l) LANG=${OPTARG};;
     n) NTOPICS=${OPTARG};;
     m) NLDAITERS=${OPTARG};;
-    *) echo "Usage: $@ -i <input data dir> -o <working dir> -l <en|nl>"
+    *) echo "Usage: ./runAll.sh -i <input data dir> -o <working dir> -l <en|nl> -n <nr of topics> -m <nr of iterations>"
        exit 1;;
   esac
 done
