@@ -1,5 +1,4 @@
 # corporadb
-db backend corpora
 
 For project Sherlock, our team aims to use NLP tools to analyse large collections of documents. The original description of the team's goals are on Sherlock's [repo](https://github.com/nlesc-sherlock/Sherlock/blob/master/topics/analyzing_document_collections/analyzing_large_document_collections.md).
 
