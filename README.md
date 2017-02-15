@@ -4,7 +4,7 @@ For project Sherlock, our team aims to use NLP tools to analyse large collection
 
 The following sections describes the process for going from a bunch of plain text documents (emails in this case) to a nice visualization of the topics in these documents.
 
-During an earlier stages of the project we work in [this](https://github.com/nlesc-sherlock/analyzing-corpora) repository.
+During the earlier stages of the project we work in [this](https://github.com/nlesc-sherlock/analyzing-corpora) repository.
 
 ## 1 Installation instructions
 Optionally create a virtual python environment in this repo clone.
