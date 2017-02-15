@@ -8,11 +8,14 @@ def saveTokens(filename, tokens):
         for token in tokens:
             fout.write(token + '\n')
 
+def filterWord(word):
+    return bool(set(word) & set("~!@#$%^&*()-_+=<>?/"))
+
 def doTokenization(inputfolder,outputfolder, lang='en'):
     inputdirname = inputfolder.rstrip('/')
     outputdirname = outputfolder.rstrip('/')
     docs = glob(inputdirname + '/**/*.')
-    tokenizer = Tokenizer(filters=[filter_email], lang=lang)
+    tokenizer = Tokenizer(filters = [filter_email], word_filters = [filterWord], lang = lang)
     for doc in docs:
         try:
             tokens = tokenizer.tokenize_file(doc)

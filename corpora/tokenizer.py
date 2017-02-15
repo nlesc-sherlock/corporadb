@@ -42,7 +42,7 @@ class Tokenizer(object):
          u'\u2019', u'\u2018', u'\u2013', u'\u2022',
          u'\u2014', u'\uf02d', u'\u20ac', u'\u2026'])
 
-    def __init__(self, nlp_tags=None, exclude_words=None, filters=[], lang='en'):
+    def __init__(self, nlp_tags=None, exclude_words=None, text_filters=[], word_filters=[], lang='en'):
         """
         Parameters
         ----------
@@ -52,8 +52,10 @@ class Tokenizer(object):
             for an example
         exclude_words : list or set of str
             Exact words and symbols to filter out.
-        filters : list of function (str -> str)
+        text_filters : list of functions (str -> str)
             Filters to filter out raw text, in order.
+        word_filters : list of functions (str -> bool)
+            Filters for excluding words (True = skip, False = keep)
         """
         if nlp_tags is None:
             self.nlp_tags = self.standard_nlp_tags
@@ -64,13 +66,16 @@ class Tokenizer(object):
             if lang=='en':
                 self.exclude_words = self.standard_stopwords_en
                 self.nlp = nlp_en
-            else:
+            elif(lang=='nl'):
                 self.exclude_words = self.standard_stopwords_nl
                 self.nlp = nlp_nl
+            else:
+                raise Exception("Language not recognized: " + lang)
         else:
             self.exclude_words = frozenset(exclude_words)
 
         self.filters = filters
+        self.word_filters = word_filters
 
     def tokenize_file(self, f):
         try:
@@ -94,12 +99,19 @@ class Tokenizer(object):
         words = []
         for s in self.nlp.split(self.nlp.parse(text)):
             for word, tag in s.tagged:
-                if tag in self.nlp_tags:
-                    word = word.lower()
-                    if word not in self.exclude_words:
-                        words.append(word)
+                if tag not in self.nlp_tags: continue
+                word = word.lower()
+                if(filter_word(word)): words.append(word)
 
         return words
+
+        def filter_word(word):
+            if word in self.exclude_words:
+                return False
+            for f in self.word_filters:
+                if f(word):
+                    return False
+            return True
 
 forward_pattern = re.compile('[\r\n]>[^\r\n]*[\r\n]')
 html_patten = re.compile('<[^<]+?>')
