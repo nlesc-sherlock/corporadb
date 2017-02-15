@@ -3,7 +3,7 @@ import nltk
 import pattern.en as nlp_en
 import pattern.nl as nlp_nl
 import re
-
+import codecs
 
 class Tokenizer(object):
 
@@ -81,7 +81,7 @@ class Tokenizer(object):
         try:
             return self.tokenize(f.read())
         except AttributeError:
-            with open(f, 'rb') as fp:
+            with codecs.open(f, 'rb', 'utf-8') as fp:
                 return self.tokenize(fp.read())
 
     def tokenize(self, text):

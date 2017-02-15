@@ -2,9 +2,10 @@ from glob2 import glob
 import os
 import argparse
 from corpora.tokenizer import Tokenizer, filter_email
+import codecs
 
 def saveTokens(filename, tokens):
-    with open(filename, 'w') as fout:
+    with codecs.open(filename, 'w', 'utf-8') as fout:
         for token in tokens:
             fout.write(token + '\n')
 
@@ -25,8 +26,9 @@ def doTokenization(inputfolder,outputfolder, lang='en'):
             if not os.path.exists(outputdir):
                 os.makedirs(outputdir)
             saveTokens(targetFile, tokens)
-        except:
+        except Exception as e:
             print("Error with doc: {0}".format(doc))
+            print(e)
 
 # Main script
 if __name__ == '__main__':
