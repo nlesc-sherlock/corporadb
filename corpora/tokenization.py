@@ -8,11 +8,11 @@ def saveTokens(filename, tokens):
         for token in tokens:
             fout.write(token + '\n')
 
-def doTokenization(inputfolder,outputfolder):
+def doTokenization(inputfolder,outputfolder, lang='en'):
     inputdirname = inputfolder.rstrip('/')
     outputdirname = outputfolder.rstrip('/')
     docs = glob(inputdirname + '/**/*.')
-    tokenizer = Tokenizer(filters=[filter_email])
+    tokenizer = Tokenizer(filters=[filter_email], lang=lang)
     for doc in docs:
         try:
             tokens = tokenizer.tokenize_file(doc)
@@ -30,7 +30,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Tokenize and create dictionary out of given files")
     parser.add_argument('input_folder')
     parser.add_argument('output_folder')
+    parser.add_argument('language')
     args = parser.parse_args()
     basedir = args.input_folder  # 'enron_mail_clean'
     savedir = args.output_folder  # 'enron_mail_clean_tokens'
-    doTokenization(basedir,savedir)
+    doTokenization(basedir,savedir,args.language)

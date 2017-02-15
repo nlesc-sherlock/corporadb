@@ -1,6 +1,7 @@
 from __future__ import print_function
 import nltk
-import pattern.en as nlp
+import pattern.en as nlp_en
+import pattern.nl as nlp_nl
 import re
 
 
@@ -26,15 +27,22 @@ class Tokenizer(object):
         # u'UH', # interjection
         u'VB', u'VBD', u'VBG', u'VBN', u'VBP', u'VBZ',  # Verb forms
     ])
-    standard_stopwords = frozenset(
+    standard_stopwords_en = frozenset(
         nltk.corpus.stopwords.words('english') +
         ['', '.', ',', '?', '(', ')', ',', ':', "'",
          u'``', u"''", ';', '-', '!', '%', '&', '...', '=', '>', '<',
          '#', '_', '~', '+', '*', '/', '\\', '[', ']', '|', '|', '{', '}','@',
          u'\u2019', u'\u2018', u'\u2013', u'\u2022',
          u'\u2014', u'\uf02d', u'\u20ac', u'\u2026'])
+    standard_stopwords_nl = frozenset(
+        nltk.corpus.stopwords.words('dutch') +
+        ['', '.', ',', '?', '(', ')', ',', ':', "'",
+         u'``', u"''", ';', '-', '!', '%', '&', '...', '=', '>', '<',
+         '#', '_', '~', '+', '*', '/', '\\', '[', ']', '|', '|', '{', '}','@',
+         u'\u2019', u'\u2018', u'\u2013', u'\u2022',
+         u'\u2014', u'\uf02d', u'\u20ac', u'\u2026'])
 
-    def __init__(self, nlp_tags=None, exclude_words=None, filters=[]):
+    def __init__(self, nlp_tags=None, exclude_words=None, filters=[], lang='en'):
         """
         Parameters
         ----------
@@ -48,12 +56,17 @@ class Tokenizer(object):
             Filters to filter out raw text, in order.
         """
         if nlp_tags is None:
-            self.nlp_tags = Tokenizer.standard_nlp_tags
+            self.nlp_tags = self.standard_nlp_tags
         else:
             self.nlp_tags = frozenset(nlp_tags)
 
         if exclude_words is None:
-            self.exclude_words = Tokenizer.standard_stopwords
+            if lang=='en':
+                self.exclude_words = self.standard_stopwords_en
+                self.nlp = nlp_en
+            else:
+                self.exclude_words = self.standard_stopwords_nl
+                self.nlp = nlp_nl
         else:
             self.exclude_words = frozenset(exclude_words)
 
@@ -79,7 +92,7 @@ class Tokenizer(object):
             text = f(text)
 
         words = []
-        for s in nlp.split(nlp.parse(text)):
+        for s in self.nlp.split(self.nlp.parse(text)):
             for word, tag in s.tagged:
                 if tag in self.nlp_tags:
                     word = word.lower()

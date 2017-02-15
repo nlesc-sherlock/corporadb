@@ -2,3 +2,4 @@ inputdir:
   class: Directory
   path: enron_mail_clean
 tokendir: enron_mail_clean_tokens
+language: en

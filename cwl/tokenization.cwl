@@ -11,6 +11,10 @@ inputs:
     type: string
     inputBinding:
       position: 2
+  language:
+    type: string
+    inputBinding:
+      position: 3
 outputs:
   outputdir:
     type: Directory

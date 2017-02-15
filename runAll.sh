@@ -9,6 +9,7 @@ SPARK_HOME=/home/carlosm/Projects/Sherlock/spark-2.0.1/bin/
 ORIG_DATA=$DATASET
 CLEAN_DATA=${DATASET}_clean/
 CLEAN_TOKENS=${DATASET}_clean_tokens/
+LANGUAGE=en
 DATA_DICT=${DATASET}.dict
 DOC_MATRIX=${DATASET}.mtx
 LDA_MODEL=${DATASET}.lda.model
@@ -16,7 +17,7 @@ LDA_MODEL=${DATASET}.lda.model
 echo 'RUNNING CLEAN HEADERS ======================='
 python corpora/cleanHeaders.py $ORIG_DATA $CLEAN_DATA
 echo 'RUNNING TOKENIZATION ========================'
-python corpora/tokenization.py $CLEAN_DATA $CLEAN_TOKENS
+python corpora/tokenization.py $CLEAN_DATA $CLEAN_TOKENS $LANGUAGE
 echo 'RUNNING BUILD DICTIONARY ===================='
 python corpora/buildDict.py $CLEAN_TOKENS $DATA_DICT
 echo 'RUNNING BUILD MATRIX ========================'
