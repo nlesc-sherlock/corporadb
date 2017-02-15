@@ -3,5 +3,6 @@ inputdir:
     path:  enron_mail
 cleandir: enron_mail_clean
 tokendir: enron_mail_clean_tokens
+language: en
 dictfile: enron_mail.dict
 matrixfile: enron_mail.mtx

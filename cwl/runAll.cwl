@@ -6,6 +6,7 @@ inputs:
     inputdir: Directory
     cleandir: string
     tokendir: string
+    language: string
     dictfile: string
     matrixfile: string
 
@@ -19,7 +20,7 @@ outputs:
 
 steps:
     cleanheaders:
-        run: 
+        run:
             cleanheader.cwl
         in:
             inputdir: inputdir
@@ -27,15 +28,16 @@ steps:
         out: [outputdir]
 
     tokenization:
-        run: 
+        run:
             tokenization.cwl
         in:
             inputdir: cleanheaders/outputdir
             tokendir: tokendir
+            language: language
         out: [outputdir]
 
     builddictionary:
-        run: 
+        run:
             builddict.cwl
         in:
             inputdir: tokenization/outputdir
@@ -43,7 +45,7 @@ steps:
         out: [output]
 
     builddocmatrix:
-        run: 
+        run:
             builddocmatrix.cwl
         in:
             inputdir: tokenization/outputdir
