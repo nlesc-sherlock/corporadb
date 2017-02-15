@@ -6,7 +6,7 @@ LANG=en
 NTOPICS=25
 NLDAITERS=10
 
-while getopts ":d:o:h:l:n:m:" OPT; do
+while getopts ":i:o:l:n:m:h" OPT; do
   case "${OPT}" in
 
     i) INPUTDIR=${OPTARG};;
@@ -78,5 +78,5 @@ if [[ ! -x "${SPARK_HOME}/bin/spark-submit" ]]; then
 fi
 
 echo 'RUNNING BUILD MODEL ========================='
-${SPARK_HOME}/spark-submit corpora/trainModel.py ${DOC_MATRIX} ${LDA_MODEL} ${NTOPICS} ${NLDAITERS}
+${SPARK_HOME}/bin/spark-submit corpora/trainModel.py ${DOC_MATRIX} ${LDA_MODEL} ${NTOPICS} ${NLDAITERS}
 exit 0
