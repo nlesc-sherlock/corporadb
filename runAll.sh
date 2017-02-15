@@ -73,7 +73,7 @@ python corpora/buildDocumentMatrix.py ${DATA_DICT} ${CLEAN_TOKENS} ${DOC_MATRIX}
 if [[ -z "$SPARK_HOME" ]]; then
   echo "SPARK_HOME environment variable was not set...please set it to your spark folder." >&2; exit 1
 fi
-if [[ -x "${SPARK_HOME}/bin/spark-submit" ]]; then
+if [[ ! -x "${SPARK_HOME}/bin/spark-submit" ]]; then
   echo "spark-submit was not found in ${SPARK_HOME}/bin..." >&2; exit 1
 fi
 
