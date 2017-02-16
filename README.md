@@ -11,7 +11,6 @@ Optionally create a virtual python environment in this repo clone.
 Then type
 
 ```shell
-$ pip install -e .
 $ python setup.py install
 ```
 
