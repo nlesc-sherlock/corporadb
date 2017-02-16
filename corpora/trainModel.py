@@ -8,7 +8,8 @@ import argparse
 from pyspark import SparkContext
 from pyspark.sql.session import SparkSession
 
-sc = SparkContext("local[4]", "Simple App1")
+# sc = SparkContext("local[4]", "Simple App1")
+sc = SparkContext("", "Simple App1") # do not specify local to use spark defaults
 spark = SparkSession.builder \
      .getOrCreate()
 
@@ -19,9 +20,9 @@ def sparkToScipySparse(spRow):
     values = spRow.data
     return SparseVector(cols, { idx: val for idx,val in zip(indices, values) })
 
-def trainModel(docMatrix, savemodel, k, iterations=10):
+def trainModel(docMatrix, savemodel, k, iterations=10, parallelization=16):
     data = mmread(docMatrix)
-    rowRange = sc.parallelize(xrange(data.shape[0]))
+    rowRange = sc.parallelize(xrange(data.shape[0]), parallelization)
     dataSpark = spark.createDataFrame(rowRange
             .map(lambda i: Row(label=i, features=sparkToScipySparse(data.getrow(i)))))
     lda = LDA(k=k, maxIter=iterations)
@@ -47,11 +48,13 @@ if __name__ == '__main__':
     parser.add_argument('output_model')
     parser.add_argument('number_topics', type=int)
     parser.add_argument('number_iterations', type=int)
+    parser.add_argument('parallelization', type=int)
     args = parser.parse_args()
 
     docMatrix = args.input_matrix  # 'enron_mail_random_clean.mtx'
     savemodel = args.output_model  # 'enron_mail_clean.lda.model'
     nTopics = args.number_topics   # 5
     nIterations = args.number_iterations # 10,000
+    parallelization = args.parallelization # 16 if you have 16 spark runners
 
-    trainModel(docMatrix, savemodel, nTopics, nIterations)
+    trainModel(docMatrix, savemodel, nTopics, nIterations, parallelization)

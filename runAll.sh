@@ -5,6 +5,7 @@ WORKDIR=${PWD}/tmp
 LANG=en
 NTOPICS=25
 NLDAITERS=10
+NRUNNERS=16
 
 while getopts ":i:o:l:n:m:h" OPT; do
   case "${OPT}" in
@@ -78,5 +79,5 @@ if [[ ! -x "${SPARK_HOME}/bin/spark-submit" ]]; then
 fi
 
 echo 'RUNNING BUILD MODEL ========================='
-${SPARK_HOME}/bin/spark-submit corpora/trainModel.py ${DOC_MATRIX} ${LDA_MODEL} ${NTOPICS} ${NLDAITERS}
+${SPARK_HOME}/bin/spark-submit corpora/trainModel.py ${DOC_MATRIX} ${LDA_MODEL} ${NTOPICS} ${NLDAITERS} ${NRUNNERS}
 exit 0
